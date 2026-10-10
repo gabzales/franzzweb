@@ -1,0 +1,14 @@
+{
+  "name": "franzz-orbit-web",
+  "version": "0.3.0",
+  "private": true,
+  "engines": {
+    "node": "22.x"
+  },
+  "scripts": {
+    "test": "node test/run.js && node test/speed.js && node test/page.js && node test/envadmin.js && node test/deadline.js && node test/extract.js && node test/stateless.js && node test/quota.js && node test/chat.js && node test/firestore.js && node test/study.js && node test/scan.js && node test/pagequota.js && node test/login-hardening.js && node test/frontend.js"
+  },
+  "dependencies": {
+    "firebase-admin": "14.5.0"
+  }
+}

@@ -1,0 +1,20 @@
+'use strict';
+process.env.ORBIT_MEMORY_DB = '1';
+process.env.SESSION_SECRET = 'rahasia-sesi-yang-panjang-sekali-0123456789';
+process.env.ADMIN_USERNAME = 'boss';
+process.env.ADMIN_PASSWORD = 'rahasia-admin';
+const assert = require('assert');
+const api = require('../lib/api');
+const { resetMemory } = require('../lib/db');
+const bearer = token => ({ auth: 'Bearer ' + token });
+(async () => {
+  resetMemory();
+  const A = (await api.login({ username: 'boss', password: 'rahasia-admin' })).body.token;
+  assert.strictEqual((await api.admin({ action: 'createUser', username: 'murid', password: 'password123', quota: 100 }, bearer(A))).status, 200);
+  const U = (await api.login({ username: 'murid', password: 'password123' })).body.token;
+  const out = await Promise.all(Array.from({ length: 120 }, () => api.page({ url: 'http://127.0.0.1/' }, bearer(U))));
+  const limited = out.filter(x => x.status === 429).length;
+  assert.strictEqual(limited, 20, '100 request pertama dihitung secara atomik, 20 berikutnya dibatasi');
+  assert.strictEqual(out.filter(x => x.status === 400).length, 100, 'request yang lolos kuota ditolak karena URL privat');
+  console.log('TES KUOTA HALAMAN KONKUREN LULUS');
+})().catch(e => { console.error('GAGAL:', e.stack || e.message); process.exit(1); });

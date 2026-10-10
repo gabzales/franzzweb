@@ -1,0 +1,8 @@
+node_modules/
+.vercel/
+.env
+.env.*
+/service-account.json
+/firebase-service-account*.json
+/*-firebase-adminsdk-*.json
+/.firebase/
