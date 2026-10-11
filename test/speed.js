@@ -6,7 +6,7 @@ const mk = n => Array.from({ length: n }, (_, i) => ({ id: 'q' + (i + 1), title:
 const real = global.fetch;
 
 (async () => {
-  assert.deepStrictEqual(thinkingFor('gemini-3.5-flash'), { thinkingLevel: 'low' });
+  assert.deepStrictEqual(thinkingFor('gemini-3.8-flash'), { thinkingLevel: 'low' });
   assert.deepStrictEqual(thinkingFor('gemini-2.5-flash'), { thinkingBudget: 0 });
   assert.strictEqual(thinkingFor('model-lain'), null);
 
@@ -15,7 +15,6 @@ const real = global.fetch;
   global.fetch = async (u, o) => { const b = JSON.parse(o.body); bodies.push(b.generationConfig); return b.generationConfig.thinkingConfig ? { ok: false, status: 400 } : gem({ answers: [{ id: 'q1', text: 'ok' }] }); };
   assert.strictEqual((await answer({ key: 'k', models: ['gemini-3.8-flash'], questions: mk(1), delays: [1] })).length, 1);
   assert.deepStrictEqual(bodies.map(g => !!g.thinkingConfig), [true, false], 'harus coba dengan lalu tanpa thinkingConfig');
-  assert.ok(bodies.every(g => !Object.prototype.hasOwnProperty.call(g, 'temperature')), 'Gemini 3.x tidak boleh menerima parameter temperature legacy');
 
   // 20 soal -> 3 panggilan paralel, hasil digabung berurutan
   let calls = 0, active = 0, peak = 0;

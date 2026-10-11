@@ -35,7 +35,8 @@ Buka Vercel → project FRANZZ Orbit → **Settings → Environment Variables**.
 
 - `FIREBASE_SERVICE_ACCOUNT_JSON`: seluruh isi file JSON service account sebagai satu nilai environment variable.
 - `FIREBASE_PROJECT_ID`: **Project ID**, bukan nama tampilan. Harus sama dengan `project_id` di JSON service account. Variabel ini sebenarnya opsional bila `project_id` sudah ada di JSON, tapi mengisinya membantu menghindari salah project.
-- `SESSION_SECRET`, `ADMIN_USERNAME`, `ADMIN_PASSWORD`, serta `GEMINI_API_KEY` tetap dibutuhkan seperti sebelumnya.
+- Saat halaman memanggil `/api/status`, backend melakukan probe baca ringan ke Firestore. Jika format JSON valid tetapi koneksi, database, atau izin IAM bermasalah, `panel` akan nonaktif dan status menampilkan pesan penyebab umum. Probe baca ini tidak membuktikan izin tulis; login admin/pembuatan pengguna akan menguji operasi tulis yang sebenarnya.
+- `SESSION_SECRET`, `ADMIN_USERNAME`, `ADMIN_PASSWORD`, serta `GEMINI_API_KEY` tetap dibutuhkan seperti sebelumnya. Untuk model baru, pakai `GEMINI_MODEL=gemini-3.8-flash`; model lama di environment/pengaturan tersimpan dimigrasikan oleh kode jika memakai `gemini-3.5-flash` atau `gemini-3.7-flash`.
 
 Alternatif kalau ingin variabel kredensial satu-baris: encode isi file JSON ke Base64 di PowerShell dari folder file tersebut:
 
@@ -43,7 +44,7 @@ Alternatif kalau ingin variabel kredensial satu-baris: encode isi file JSON ke B
 [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes((Get-Content .\service-account.json -Raw)))
 ```
 
-Masukkan hasilnya ke `FIREBASE_SERVICE_ACCOUNT_BASE64` sebagai pengganti `FIREBASE_SERVICE_ACCOUNT_JSON`. **Jangan set kedua variabel kredensial sekaligus.** Nilai Base64 tetap merupakan rahasia, bukan cara mengenkripsi file.
+Masukkan hasilnya ke `FIREBASE_SERVICE_ACCOUNT_BASE64` sebagai pengganti `FIREBASE_SERVICE_ACCOUNT_JSON`. **Jangan set kedua variabel kredensial sekaligus**—source sekarang menolak konfigurasi ambigu dan endpoint status menampilkan pesan yang spesifik. Nilai Base64 tetap merupakan rahasia, bukan cara mengenkripsi file.
 
 ## 4. Redeploy dan verifikasi
 

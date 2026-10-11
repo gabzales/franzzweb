@@ -14,13 +14,10 @@ Struktur: `public/` (halaman statis, dilayani CDN, tidak dihitung invocation), `
 | `SESSION_SECRET` | Ya | Acak, minimal 32 karakter. Buat: `node -e "console.log(require('crypto').randomBytes(48).toString('base64url'))"` |
 | `ADMIN_USERNAME`, `ADMIN_PASSWORD` | Ya | Akun untuk masuk. Ganti password = ubah variabel, deploy ulang, semua sesi lama hangus |
 | `GEMINI_API_KEY` | Ya (untuk fitur AI) | API key Gemini |
-| `GEMINI_MODEL`, `GEMINI_FALLBACK_MODEL` | Tidak | Model utama dan cadangan. Cadangan dipakai otomatis bila model utama kena batas (429) |
+| `GEMINI_MODEL`, `GEMINI_FALLBACK_MODEL` | Tidak | Default baru `gemini-3.8-flash`; model utama/cadangan dapat diubah. ID lama `gemini-3.5-flash` dan `gemini-3.7-flash` dimigrasikan ke pengganti resminya. Cadangan dipakai bila model utama gagal sementara. |
 | `FIREBASE_SERVICE_ACCOUNT_JSON` | Ya untuk panel | Seluruh isi JSON service account dari Firebase Project Settings → Service accounts. Rahasia. |
 | `FIREBASE_PROJECT_ID` | Disarankan | Project ID Firebase/Google Cloud; harus cocok dengan service account. |
 | `FIREBASE_SERVICE_ACCOUNT_BASE64` | Alternatif | Versi Base64 dari seluruh file JSON; gunakan salah satu format kredensial, jangan keduanya. |
-
-Model bawaan proyek adalah `gemini-3.8-flash`. Jika instalasi lama sudah menyimpan model melalui panel Admin di Firestore, nilai tersimpan itu lebih prioritas daripada bawaan; periksa **Admin → Pengaturan Gemini** dan ubah model ke `gemini-3.8-flash` bila masih memakai model lama. Google menandai `gemini-3.5-flash` sebagai deprecated dan menyarankan migrasi ke model Flash yang lebih baru. ([Dokumentasi model Gemini](https://ai.google.dev/gemini-api/docs/models.md))
-
 
 5. Buka situs dan login dengan `ADMIN_USERNAME` / `ADMIN_PASSWORD`. Tidak ada layar setup. Setelah service account dan Firestore benar, tombol Admin akan aktif untuk mengelola pengguna, kuota, dan pengaturan Gemini.
 6. Aplikasi Android: login dengan alamat situs ini, username, dan password admin.
@@ -45,10 +42,8 @@ Tombol **Fitur AI** di bar atas membuka menu belajar:
 - **Cek Jawaban**: tulis soal dan **jawabanmu sendiri** (kunci/rubrik opsional), AI memberi **perkiraan skor** 0-100, yang sudah baik, yang kurang, saran, dan inti jawaban yang benar.
 - **Latihan Soal**: AI membuat soal dari materi (pilihan ganda, esai singkat, atau campur), kamu menjawab, lalu dinilai. Pilihan ganda dinilai lokal (tanpa AI, tanpa kuota),
   esai dinilai AI terhadap poin acuan. Hasilnya skor total perkiraan plus umpan balik per soal.
-- **Scan Soal**: ambil/unggah foto JPG, PNG, atau WebP; browser mengecilkan gambar lalu AI membaca soal dan menjelaskan konsep serta langkah penyelesaiannya. Foto maksimum 1,5 MB setelah kompresi.
-- **Buka ChatGPT**: membuka ChatGPT pada tab baru.
 - Semua skor adalah **perkiraan AI untuk latihan, bukan nilai resmi**, dan itu ditulis di kartu skornya. Setiap permintaan ke AI menghitung satu kuota harian pengguna biasa (admin tanpa batas).
-- Endpoint: `/api/study` (`tool`: `check`, `quiz`, `grade`), `/api/scan` (foto soal), dan `/api/chat` dengan `mode` (`tutor`, `explain`, `summary`). Logika alat belajar ada di `lib/study.js`; pembacaan foto ada di `lib/gemini.js` dan `lib/api.js`.
+- Endpoint: `/api/study` (`tool`: `check`, `quiz`, `grade`) dan `/api/chat` dengan `mode` (`tutor`, `explain`, `summary`). Logikanya di `lib/study.js`.
 - Sengaja tidak ada fitur menjawab soal ujian otomatis, mengatur nilai agar melewati KKM, atau menyamarkan penggunaan.
 
 ## Chat AI dan situs lain
@@ -62,6 +57,15 @@ Tombol **Fitur AI** di bar atas membuka menu belajar:
 - Jendela Orbit hanya menerima data dari halaman yang membukanya, dan jawaban hanya dikirim balik ke halaman itu setelah kamu menekan Terapkan.
 - Batas: situs yang memblokir bookmarklet (CSP ketat) atau memutus hubungan antar jendela (COOP) tidak bisa; widget pilihan buatan sendiri
   (bukan input HTML biasa) tidak terdeteksi sebagai kolom, tapi isi halamannya tetap bisa ditanyakan lewat chat. Perlu izin popup. Hanya browser desktop.
+
+
+## Chat AI visual: mikrofon, buat gambar, dan edit foto
+
+Chat AI sekarang menggunakan composer bergaya kartu dengan kolom pesan yang lebih besar, tombol mikrofon (speech-to-text; perlu browser yang mendukung dan izin mic), pemilih foto, serta mode **Buat gambar** dan **Edit foto**. Di web, hasil gambar memiliki tombol unduh. Di Android, pilih foto lewat pemilih file, beri arahan edit, lalu hasilnya ditampilkan di percakapan.
+
+Endpoint backend: `POST /api/image` dengan sesi login yang sama seperti endpoint AI lainnya. Request untuk generate menggunakan `{ action: "generate", prompt, aspectRatio? }`; edit menggunakan `{ action: "edit", prompt, imageData, mimeType, aspectRatio? }`. Foto dikompres di klien sebelum diunggah; backend memvalidasi MIME/base64, membatasi ukuran prompt/payload/output, menggunakan kuota AI, dan mengembalikan kuota jika provider gagal. `GEMINI_API_KEY` tetap hanya berada di server. Model gambar opsional dapat diatur dengan `GEMINI_IMAGE_MODEL`; default `gemini-nano-banana-2.1`. Tidak perlu menaruh API key di APK atau browser.
+
+Untuk menggunakan fitur gambar, pastikan API key Gemini aktif dan project memiliki akses serta kuota untuk model gambar. Endpoint ini menggunakan Gemini Interactions API; uji di deployment staging terlebih dahulu karena akun/provider dapat berbeda dalam ketersediaan model dan kuota.
 
 ## Penyimpanan data Firestore
 - **Akun admin utama** tetap berasal dari `ADMIN_USERNAME` dan `ADMIN_PASSWORD`. Akun pengguna tambahan, hash password, peran, status aktif, kuota, dan pengaturan Gemini disimpan permanen di Firestore.
@@ -80,7 +84,7 @@ Tombol **Fitur AI** di bar atas membuka menu belajar:
 ## Keamanan
 - Rahasia hanya di Environment Variables, tidak ada di kode atau repo. API key Gemini tidak pernah dikirim ke browser atau APK.
 - Token sesi bertanda tangan (HMAC) dan terikat ke password admin: ganti `ADMIN_PASSWORD` mencabut semua sesi.
-- Password yang diketik hanya dikirim lewat HTTPS saat login dan tidak disimpan. Token disimpan di browser (localStorage) / APK (Android Keystore).
+- Password yang diketik hanya dikirim lewat HTTPS saat login dan tidak disimpan. Token disimpan di browser (localStorage) dan di penyimpanan privat sandbox aplikasi Android (SharedPreferences; bukan hardware-backed Android Keystore).
 - Header keamanan (vercel.json): Content-Security-Policy, X-Frame-Options DENY, nosniff, no-referrer.
 
 ## Lihat dan analisis halaman web apa saja
@@ -98,7 +102,8 @@ Batasan: halaman yang dirender dengan JavaScript atau butuh login hanya menampil
 awal saja; tombol Isi otomatis hanya untuk Google Forms. Untuk situs lain yang berisi form biasa, pakai bookmark Orbit (lihat Chat AI dan situs lain) atau aplikasi Android.
 
 ## Kecepatan
-Mode berpikir Gemini diturunkan otomatis (Gemini 3: `thinkingLevel: low`, Gemini 2.x: `thinkingBudget: 0`) dan request diulang tanpa pengaturan berpikir bila model menolaknya. Parameter `temperature` legacy tidak dikirim untuk model Gemini 3.x mengikuti panduan migrasi terbaru. Soal lebih dari 8 dipecah dan dikirim paralel (maks 3 sekaligus).
+Model utama default: `gemini-3.8-flash`; ID lama `gemini-3.5-flash` → `gemini-3.6-flash` dan `gemini-3.7-flash` → `gemini-3.8-flash`. Mode berpikir Gemini diturunkan otomatis (Gemini 3: `thinkingLevel: low`, Gemini 2.x: `thinkingBudget: 0`;
+diulang tanpa pengaturan itu bila model menolak). Soal lebih dari 8 dipecah dan dikirim paralel (maks 3 sekaligus).
 
 ## Batasan
 - Tombol Isi otomatis hanya untuk Google Forms publik. Situs lain: bookmark Orbit (desktop) atau aplikasi Android.
@@ -107,4 +112,11 @@ Mode berpikir Gemini diturunkan otomatis (Gemini 3: `thinkingLevel: low`, Gemini
 - Parser membaca struktur internal Google Forms yang bisa berubah sewaktu-waktu.
 
 ## Tes lokal
-Jalankan `npm install`, lalu `npm test` (termasuk adapter Firestore dengan fake Firestore, tes transaksi tiruan, regresi Scan Soal, pembatasan kuota konkuren, dan hardening login; perintah tes tidak memerlukan database live dan berjalan di Windows/macOS/Linux). Belum diuji ke project Firebase asli, API key Gemini asli, browser produksi, atau deployment Vercel; lakukan uji staging sebelum meluncurkan ke pengguna. Lihat `AUDIT_REPORT.md` untuk temuan, perbaikan, dan batas verifikasi.
+Jalankan `npm install`, lalu `npm test` (termasuk adapter Firestore dengan fake Firestore dan tes transaksi tiruan; perintah tes tidak memerlukan database live dan berjalan di Windows/macOS/Linux). Belum diuji ke project Firebase asli atau deployment Vercel; lakukan uji staging sebelum meluncurkan ke pengguna.
+
+
+## Kompatibilitas klien Android
+
+Aplikasi Android memakai backend yang sama dengan web; ia tidak menyimpan `GEMINI_API_KEY` atau kredensial Firebase di APK. Endpoint yang dipakai: `GET /api/status` untuk memeriksa server, `POST /api/login`, `POST /api/chat` (opsi `mode`: `tutor`, `explain`, `summary`), `POST /api/image` (generate/edit gambar), `POST /api/analyze`, `POST /api/gemini` untuk Scan & Fill, dan `POST /api/study` (`check`, `quiz`, `grade`). Semua permintaan AI memakai token sesi `Authorization: Bearer …`.
+
+Di APK, alamat server awal adalah `https://www.franzzorbit.my.id` dan tetap dapat diganti di layar login jika deploy lu memakai domain lain. Fitur baca layar hanya menggunakan Accessibility Service yang diaktifkan pengguna; kolom password dikecualikan, dan teks layar dikirim ke server hanya saat pengguna memilih opsi konteks layar atau menjalankan Scan & Fill / Analisis AI. Periksa jawaban yang disarankan sebelum menerapkannya ke aplikasi asal.

@@ -2,6 +2,8 @@
 const assert = require('assert');
 const { createFirestoreStore, persistent, readFirebaseConfig, hasFirebaseEnv } = require('../lib/db');
 
+let forceFirestoreQueryError = false;
+
 class Snapshot {
   constructor(data) { this.data = data || null; this.exists = !!data; }
   get(field) { return this.data ? this.data[field] : undefined; }
@@ -17,6 +19,7 @@ class FakeQuery {
   where(field, op, value) { return new FakeQuery(this.collection, [...this.filters, [field, op, value]], this.fields); }
   select(...fields) { return new FakeQuery(this.collection, this.filters, fields); }
   async get() {
+    if (forceFirestoreQueryError) throw new Error('PERMISSION_DENIED: test-only Firestore probe failure');
     const docs = [];
     for (const [path, data] of this.collection.db.data.entries()) {
       if (!path.startsWith(this.collection.name + '/')) continue;
@@ -90,6 +93,10 @@ class FakeFirestore {
     const parsed = readFirebaseConfig();
     assert.strictEqual(parsed.projectId, 'orbit-test-2026');
     assert.ok(parsed.credentials.private_key.includes('\ntest-key\n'));
+    process.env.FIREBASE_SERVICE_ACCOUNT_BASE64 = Buffer.from(JSON.stringify(credentials)).toString('base64');
+    assert.strictEqual(persistent(), false, 'using JSON and Base64 credential variables together is rejected');
+    delete process.env.FIREBASE_SERVICE_ACCOUNT_BASE64;
+    assert.strictEqual(persistent(), true, 'single JSON credential remains valid');
     process.env.FIREBASE_PROJECT_ID = 'a-different-project';
     assert.strictEqual(persistent(), false, 'mismatched project IDs are rejected');
     process.env.FIREBASE_PROJECT_ID = 'orbit-test-2026';
@@ -144,6 +151,11 @@ class FakeFirestore {
       delete process.env.ORBIT_MEMORY_DB;
       const api = require('../lib/api');
       assert.deepStrictEqual((await api.status()).body, { configured: true, adminReady: true, panel: true });
+      forceFirestoreQueryError = true;
+      const failedProbe = await api.status();
+      assert.strictEqual(failedProbe.body.panel, false, 'status must not claim Firestore is connected when live probe fails');
+      assert.ok(failedProbe.body.storageError, 'status should explain that Firestore is unreachable');
+      forceFirestoreQueryError = false;
       const adminLogin = await api.login({ username: 'owner-admin', password: 'owner-admin-password' });
       assert.strictEqual(adminLogin.status, 200, 'admin login should use mocked Firestore');
       const adminCtx = { auth: 'Bearer ' + adminLogin.body.token };

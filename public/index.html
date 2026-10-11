@@ -24,12 +24,31 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,#bubble:focus-vi
 @keyframes bob{0%,100%{transform:translateY(-3px)}50%{transform:translateY(3px)}}
 @media (prefers-reduced-motion:reduce){#bubble img{animation:none}}
 #dot{position:absolute;top:-2px;right:-2px;width:14px;height:14px;border-radius:50%;background:var(--grey);border:2px solid #fff}
-#panel{position:absolute;width:250px;max-width:calc(100% - 16px);z-index:6;border:2px solid var(--ink);border-radius:16px;padding:12px;display:none;box-shadow:0 6px 16px rgba(0,0,0,.2)}
-#panel.open{display:block}
-#status{margin:0 0 8px;font-weight:700;font-size:.92rem}
-#panel .fade button{width:100%;margin-bottom:8px}
-#oprow{background:#fff;border-radius:10px;padding:8px;margin-top:2px;font-size:.85rem}
-#oprow input{width:100%;margin:6px 0 0}
+#panel{position:absolute;width:328px;max-width:calc(100% - 16px);max-height:min(78vh,570px);overflow:auto;z-index:6;border:1px solid #D9CBEF;border-radius:22px;padding:13px;background:rgba(255,255,255,.97);box-shadow:0 18px 48px rgba(49,33,93,.24),0 0 0 4px rgba(123,63,228,.06);display:none;transform-origin:top right;scrollbar-width:thin;scrollbar-color:#D9CBEF transparent}
+#panel.open{display:block;animation:panelIn .24s cubic-bezier(.2,.8,.2,1) both}
+@keyframes panelIn{from{opacity:0;transform:translateY(9px) scale(.975)}to{opacity:1;transform:translateY(0) scale(1)}}
+.panel-head{display:flex;align-items:center;gap:10px;padding:2px 2px 12px;border-bottom:1px solid #EFEAF8;margin-bottom:10px}
+.panel-brand-img{width:42px;height:42px;object-fit:contain;border-radius:14px;background:linear-gradient(145deg,#F7F2FF,#EDE8FF);padding:2px;animation:bob 2.8s ease-in-out infinite}
+.panel-brand-copy{min-width:0;flex:1}.panel-brand-copy b{display:block;font-size:.96rem;letter-spacing:.02em}.panel-brand-copy small{display:block;color:#77708E;font-size:.75rem;margin-top:1px}
+.panel-live{width:8px;height:8px;border-radius:50%;background:#28B878;box-shadow:0 0 0 4px #E8F8EF;flex:none}
+#status{margin:0 0 10px;padding:8px 10px;border-radius:10px;background:#F8F6FD;color:#655B7F;font-weight:600;font-size:.77rem;line-height:1.4}
+#panel .fade{display:flex;flex-direction:column;gap:8px}
+#panel .tool-btn{display:flex;align-items:center;gap:11px;width:100%;min-height:59px;margin:0;padding:8px 10px;text-align:left;background:#fff;color:#251A42;border:1.5px solid #E5D9F0;border-radius:15px;box-shadow:0 2px 7px rgba(49,33,93,.035);font:inherit;transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease,background .18s ease;animation:toolIn .32s both}
+#panel .tool-btn:nth-child(2){animation-delay:.03s}#panel .tool-btn:nth-child(3){animation-delay:.06s}#panel .tool-btn:nth-child(4){animation-delay:.09s}#panel .tool-btn:nth-child(5){animation-delay:.12s}
+@keyframes toolIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+#panel .tool-btn:hover{border-color:#B49AE7;box-shadow:0 7px 18px rgba(84,55,144,.11);transform:translateY(-1px);background:#FDFBFF}
+#panel .tool-btn:active{transform:scale(.985)}
+#panel .tool-btn.primary{border-color:#C9B4F4;background:linear-gradient(105deg,#FBF8FF,#F4F0FF)}
+.tool-ic{width:39px;height:39px;display:grid;place-items:center;flex:none;border-radius:12px;background:linear-gradient(145deg,#F7F2FF,#EAE3FF);color:#7545CB}
+.tool-ic svg{width:21px;height:21px;stroke:currentColor;stroke-width:1.8;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.tool-copy{min-width:0;flex:1}.tool-copy b{display:block;font-size:.87rem;line-height:1.25}.tool-copy small{display:block;margin-top:3px;color:#77708E;font-size:.71rem;font-weight:500;line-height:1.3}
+.tool-arrow{color:#8D7EB0;font-size:1.25rem;font-weight:500;flex:none;transition:transform .18s ease}.tool-btn:hover .tool-arrow{transform:translateX(3px)}
+#panel .tool-btn.danger{background:#FFF8F7;border-color:#F0CBC5;color:#A33125}
+#panel .tool-btn.danger .tool-ic{background:#FDECE9;color:#B83C30}
+#newtab{display:none;margin:0 0 8px;font-size:.85rem}
+#oprow{background:#F8F6FD;border:1px solid #EEE7F8;border-radius:13px;padding:9px 10px;margin-top:10px;font-size:.78rem;color:#716789}
+#oprow input{width:100%;accent-color:#7B3FE4;margin:7px 0 0}
+@media(prefers-reduced-motion:reduce){#panel.open,#panel .tool-btn,.panel-brand-img{animation:none;transition:none}}
 #newtab{display:none;margin:0 0 8px;font-size:.85rem}
 dialog{border:2px solid var(--ink);border-radius:16px;padding:18px;max-width:440px;width:calc(100% - 32px);color:var(--ink)}
 dialog::backdrop{background:rgba(27,22,64,.45)}
@@ -81,23 +100,56 @@ dialog h3{margin:16px 0 4px;font-size:.95rem}
 #c-controls button{font-size:.8rem;padding:8px 10px}
 #c-controls #c-voice{background:#F1EFFC;color:var(--ink);border:1px solid #D9D1F1}
 #c-controls #c-voice.active{background:#E4F7ED;border-color:#9DD9B8;color:#12633D}
-#c-bar{display:flex;gap:8px;margin-top:10px;align-items:flex-end}
-#c-bar textarea{flex:1;resize:vertical;max-height:30vh;min-width:0;border:1px solid #D8D1EF;border-radius:12px;padding:10px 12px;font:inherit;background:#fff}
-#c-send{min-height:42px}
-@media(max-width:480px){#chatdlg{padding:14px}#c-log{min-height:160px}#c-log .m{max-width:96%}}
+#c-bar{display:flex;gap:8px;margin-top:12px;align-items:stretch;padding:6px;border:1.5px solid transparent;border-radius:18px;background:linear-gradient(#fff,#fff) padding-box,var(--grad) border-box;box-shadow:0 7px 20px rgba(93,61,168,.09);transition:box-shadow .22s ease,transform .22s ease}
+#c-bar:focus-within{box-shadow:0 0 0 4px rgba(123,63,228,.10),0 12px 28px rgba(93,61,168,.15);transform:translateY(-1px);animation:composerGlow 2.8s ease-in-out infinite}
+@keyframes composerGlow{0%,100%{box-shadow:0 0 0 3px rgba(123,63,228,.07),0 8px 22px rgba(93,61,168,.10)}50%{box-shadow:0 0 0 5px rgba(47,107,255,.10),0 12px 28px rgba(93,61,168,.16)}}
+#c-bar textarea{flex:1;resize:vertical;min-height:112px;max-height:36vh;min-width:0;border:0;outline:0;border-radius:12px;padding:13px 12px;font:inherit;line-height:1.5;background:transparent;box-shadow:none}
+#c-bar textarea:focus{outline:0;box-shadow:none}
+#c-send{min-width:76px;min-height:50px;align-self:flex-end;border-radius:13px;box-shadow:0 5px 13px rgba(80,49,160,.18);transition:transform .2s ease,box-shadow .2s ease}
+#c-send:hover{transform:translateY(-2px);box-shadow:0 8px 18px rgba(80,49,160,.24)}
+#c-bar{display:flex;flex-direction:column;gap:9px;margin-top:12px;padding:10px;border:1.5px solid transparent;border-radius:22px;background:linear-gradient(#fff,#fff) padding-box,var(--grad) border-box;box-shadow:0 8px 24px rgba(93,61,168,.10);transition:box-shadow .22s ease,transform .22s ease}
+#c-bar:focus-within{box-shadow:0 0 0 4px rgba(123,63,228,.10),0 12px 30px rgba(93,61,168,.16);transform:translateY(-1px);animation:composerGlow 2.8s ease-in-out infinite}
+#c-quick{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+#c-quick button{font-size:.78rem;border-radius:999px;padding:8px 11px;transition:transform .18s ease,background .18s ease,border-color .18s ease}
+#c-quick button:hover{transform:translateY(-1px)}
+#c-quick button.active{background:var(--grad);color:#fff;border-color:transparent;box-shadow:0 4px 12px rgba(97,61,184,.20)}
+#c-mode-note{font-size:.73rem;color:#71698F;margin-left:auto}
+#c-compose-row{display:flex;gap:8px;align-items:flex-end}
+#c-compose-row textarea{flex:1;resize:vertical;min-height:86px;max-height:30vh;min-width:0;border:0;outline:0;border-radius:12px;padding:10px 8px;font:inherit;line-height:1.5;background:transparent;box-shadow:none}
+#c-compose-row textarea:focus{outline:0;box-shadow:none}
+#c-mic{display:grid;place-items:center;flex:0 0 48px;width:48px;height:48px;min-height:48px;padding:0;border-radius:16px;background:#F3F0FF;color:#6544D1;border:1px solid #D9D0FB;transition:transform .2s ease,background .2s ease}
+#c-mic svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+#c-mic:hover{transform:translateY(-2px);background:#E9E2FF}
+#c-mic.listening{background:#E4F7ED;color:#12633D;border-color:#9DD9B8;animation:micPulse 1.2s ease-in-out infinite}
+@keyframes micPulse{50%{box-shadow:0 0 0 5px rgba(31,157,99,.12)}}
+#c-image-preview{display:flex;align-items:center;gap:10px;padding:8px;border-radius:14px;background:#F6F3FF;border:1px solid #E4DDF8}
+#c-image-preview img{width:54px;height:54px;object-fit:cover;border-radius:10px;background:#fff}
+#c-image-preview .copy{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1}
+#c-image-preview b{font-size:.8rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#c-image-preview small{font-size:.72rem;color:#696283}
+#c-image-preview button{padding:7px 10px;font-size:.76rem}
+#c-log .image-message{max-width:min(88%,520px);padding:9px}
+#c-log .image-message img{display:block;width:100%;max-height:420px;object-fit:contain;border-radius:10px;background:#F4F1FB}
+#c-log .image-message .image-caption{font-size:.78rem;margin:0 0 8px;color:inherit}
+#c-log .image-message a{display:inline-flex;margin-top:8px;color:var(--purple);font-weight:650;font-size:.82rem;text-decoration:none;padding:7px 10px;border-radius:9px;background:#F1ECFF}
+@media(prefers-reduced-motion:reduce){#c-bar:focus-within{animation:none}#c-send,#c-mic,#c-quick button{transition:none}#c-mic.listening{animation:none}}
+@media(max-width:480px){#chatdlg{padding:13px}#c-log{min-height:160px}#c-log .m{max-width:96%}#c-bar{padding:8px;border-radius:18px}#c-compose-row textarea{min-height:76px;padding:8px 4px;font-size:.94rem}#c-send{min-width:60px;padding:8px 10px}#c-mic{width:42px;height:44px;min-height:44px;flex-basis:42px;border-radius:14px}#c-mode-note{width:100%;margin-left:0}#c-quick{gap:5px}#c-quick button{padding:7px 9px}}
+@media(prefers-reduced-motion:reduce){#c-bar:focus-within{animation:none}#c-send{transition:none}}
+@media(max-width:480px){#chatdlg{padding:14px}#c-log{min-height:160px}#c-log .m{max-width:96%}#c-bar textarea{min-height:104px;padding:11px 9px}#c-send{min-width:62px;padding:8px 10px}}
 .bm{display:inline-block;padding:7px 12px;border-radius:10px;background:var(--grad);color:#fff;font-weight:700;text-decoration:none;cursor:grab}
 #studydlg{max-width:620px;padding:18px;background:linear-gradient(180deg,#fff 0%,#FBFAFF 100%);box-shadow:0 18px 60px rgba(27,22,64,.24)}
 #st-head{display:flex;align-items:center;gap:10px;margin:-2px 0 12px;padding:0 0 12px;border-bottom:1px solid #E8E3F8}
 #st-head img{width:44px;height:44px;object-fit:contain;border-radius:14px;background:#F1EFFC;padding:3px}
 #st-head h2{margin:0;font-size:1.08rem}#st-head .sub{font-size:.78rem;color:#5A5780;margin-top:2px}#st-head .x{margin-left:auto}
 #st-menu{display:flex;flex-direction:column;gap:9px}
-.st-row{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:#fff;color:var(--ink);border:2px solid #D9D1F1;border-radius:14px;padding:10px 12px;font:inherit;cursor:pointer;box-shadow:0 2px 7px rgba(27,22,64,.05)}
-.st-row:hover{border-color:#8E78F0;background:#FBFAFF}
-.st-ic{flex:none;width:40px;height:40px;border-radius:12px;background:#F1EFFC;display:grid;place-items:center;font-size:1.3rem}
-.st-row b{display:block;font-size:.95rem}.st-row small{display:block;color:#5A5780;font-size:.78rem;font-weight:500}
+.st-row{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:#fff;color:var(--ink);border:1.5px solid #E0D3EF;border-radius:15px;padding:11px 12px;font:inherit;cursor:pointer;box-shadow:0 2px 7px rgba(27,22,64,.045);transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease;animation:toolIn .32s both}
+.st-row:hover{border-color:#AA91E7;background:#FBFAFF;transform:translateY(-1px);box-shadow:0 7px 18px rgba(84,55,144,.10)}
+.st-ic{flex:none;width:41px;height:41px;border-radius:13px;background:linear-gradient(145deg,#F7F2FF,#EAE3FF);color:#7545CB;display:grid;place-items:center}
+.st-ic svg{width:21px;height:21px;stroke:currentColor;stroke-width:1.8;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.st-row b{display:block;font-size:.95rem}.st-row small{display:block;color:#77708E;font-size:.78rem;font-weight:500;margin-top:3px}
 #st-tool h3{margin:10px 0 2px;font-size:1rem}
 .st-f{margin:9px 0}.st-f label{display:block;font-weight:700;font-size:.85rem;margin-bottom:4px}
-.st-in{width:100%;box-sizing:border-box;border:1px solid #D8D1EF;border-radius:12px;padding:10px 12px;font:inherit;background:#fff;color:var(--ink)}
+.st-in{width:100%;box-sizing:border-box;border:1.5px solid #D8D1EF;border-radius:14px;padding:13px 14px;font:inherit;background:linear-gradient(180deg,#fff,#FDFCFF);color:var(--ink);transition:border-color .2s ease,box-shadow .2s ease;min-height:50px}.st-in:focus{outline:none;border-color:#9E7BE9;box-shadow:0 0 0 4px rgba(123,63,228,.09)}#st-body textarea.st-in{min-height:128px;resize:vertical;line-height:1.55}
 .st-row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 #st-body>button{margin:8px 8px 0 0}
 .st-res{margin-top:12px;padding:12px;border-radius:12px;background:#F7F5FF;border:1px solid #E3DDF7;line-height:1.55;word-break:break-word}
@@ -131,13 +183,11 @@ dialog h3{margin:16px 0 4px;font-size:.95rem}
   <div class="bar">
     <input id="url" type="url" inputmode="url" placeholder="Tempel link apa saja (Google Form = isi otomatis)" aria-label="Link" autocomplete="off">
     <button id="auto" class="g" type="button">Isi otomatis</button>
-    <button id="studyb" class="l" type="button">Fitur AI</button>
-    <button id="chatb" class="l" type="button">Chat AI</button>
     <button id="admb" class="l hide" type="button">Admin</button>
-    <button id="cfg" class="d" type="button" aria-label="Pengaturan">⚙</button>
+    <button id="cfg" class="d" type="button" aria-label="Pengaturan">Pengaturan</button>
   </div>
   <div id="stage">
-    <p id="empty">Tempel link Google Form untuk diisi otomatis, atau link situs apa saja untuk dilihat dan dianalisis AI. Untuk situs yang butuh login, pakai bookmark Orbit (Pengaturan). Tombol Chat AI untuk ngobrol dengan AI.</p>
+    <p id="empty">Tempel link Google Form untuk diisi otomatis, atau link situs apa saja untuk dilihat dan dianalisis AI. Untuk situs yang butuh login, pakai bookmark Orbit (Pengaturan). Buka robot FRANZZ untuk mengakses Scan & Fill, Analisis AI, Fitur AI, dan Chat AI.</p>
     <div id="reader" class="hide">
       <h2 id="rd-title"></h2>
       <p class="mute"><a id="rd-link" target="_blank" rel="noopener noreferrer"></a></p>
@@ -147,12 +197,19 @@ dialog h3{margin:16px 0 4px;font-size:.95rem}
     </div>
     <iframe id="frame" title="Form" sandbox="allow-scripts allow-forms allow-same-origin allow-popups allow-popups-to-escape-sandbox" referrerpolicy="no-referrer"></iframe>
 
-    <div id="panel" role="dialog" aria-label="Panel asisten">
+    <div id="panel" role="dialog" aria-label="Menu asisten FRANZZ AI">
+      <div class="panel-head">
+        <img class="panel-brand-img" src="robot/robot_y0.png" alt="">
+        <div class="panel-brand-copy"><b>FRANZZ AI</b><small>Asisten halaman dan belajar</small></div>
+        <span class="panel-live" aria-hidden="true"></span>
+      </div>
+      <p id="status" role="status" aria-live="polite">Siap digunakan</p>
       <div class="fade">
-        <p id="status" role="status" aria-live="polite">Siap</p>
-        <button id="go" class="g" type="button">Scan &amp; Fill</button>
-        <button id="stop" class="r" type="button" style="display:none">STOP</button>
-        <button id="aib" class="g hide" type="button">Analisis halaman (AI)</button>
+        <button id="go" class="tool-btn primary" type="button"><span class="tool-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3"/><path d="M8 12h8M12 8v8"/></svg></span><span class="tool-copy"><b>Scan &amp; Fill</b><small>Baca form dan bantu isi kolom</small></span><span class="tool-arrow" aria-hidden="true">›</span></button>
+        <button id="stop" class="tool-btn danger" type="button" style="display:none"><span class="tool-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/></svg></span><span class="tool-copy"><b>Hentikan proses</b><small>Batalkan proses AI yang berjalan</small></span><span class="tool-arrow" aria-hidden="true">›</span></button>
+        <button id="aib" class="tool-btn hide" type="button"><span class="tool-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 19V5M4 19h16"/><path d="m7 15 4-4 3 3 6-7"/></svg></span><span class="tool-copy"><b>Analisis Halaman AI</b><small>Pahami isi situs yang sedang dibuka</small></span><span class="tool-arrow" aria-hidden="true">›</span></button>
+        <button id="bot-study" class="tool-btn" type="button"><span class="tool-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 5.5A2.5 2.5 0 0 1 5.5 3H12v18H5.5A2.5 2.5 0 0 0 3 23z"/><path d="M21 5.5A2.5 2.5 0 0 0 18.5 3H12v18h6.5A2.5 2.5 0 0 1 21 23z"/></svg></span><span class="tool-copy"><b>Fitur AI</b><small>Tutor, ringkasan, cek jawaban, dan latihan</small></span><span class="tool-arrow" aria-hidden="true">›</span></button>
+        <button id="bot-chat" class="tool-btn" type="button"><span class="tool-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H6l-3 2v-6.5A7.5 7.5 0 0 1 10.5 7H12"/><path d="M14 3h7v7h-7zM16 6.5h3"/></svg></span><span class="tool-copy"><b>Chat AI</b><small>Tanya apa saja, bisa menggunakan suara</small></span><span class="tool-arrow" aria-hidden="true">›</span></button>
         <a id="newtab" href="#" target="_blank" rel="noopener noreferrer">Buka di tab baru</a>
       </div>
       <div id="oprow"><label for="op" id="oplabel">Opasitas 100%</label><input id="op" type="range" min="0" max="100" value="100"></div>
@@ -182,8 +239,22 @@ dialog h3{margin:16px 0 4px;font-size:.95rem}
   <p class="note" id="c-ctx"></p>
   <div id="c-log" aria-live="polite"></div>
   <label class="chk"><input id="c-use" type="checkbox" checked> Sertakan isi halaman ke AI</label>
-  <div id="c-bar"><textarea id="c-in" rows="2" placeholder="Tulis pesan atau gunakan tombol Bicara…" aria-label="Pesan"></textarea><button id="c-send" class="g" type="button">Kirim</button></div>
-  <div id="c-controls"><button id="c-mic" class="l" type="button">🎙 Bicara</button><button id="c-voice" type="button">🎧 Mulai mode suara</button><button id="c-read" class="l" type="button">🔊 Bacakan jawaban</button><button id="c-fill" class="l hide" type="button">Isi kolom di halaman</button><button id="c-clr" class="l" type="button">Hapus chat</button><button id="c-close" class="l" type="button">Tutup</button></div>
+  <div id="c-bar">
+    <input id="c-image-file" class="hide" type="file" accept="image/*" aria-label="Pilih foto untuk diedit">
+    <div id="c-image-preview" class="hide"><img id="c-image-thumb" alt="Foto yang dipilih"><div class="copy"><b id="c-image-name">Foto terpilih</b><small id="c-image-caption">Siap diedit dengan AI</small></div><button id="c-image-remove" class="l" type="button" aria-label="Hapus foto">Hapus</button></div>
+    <div id="c-quick">
+      <button id="c-attach" class="l" type="button" title="Lampirkan foto">＋ <span>Foto</span></button>
+      <button id="c-gen" class="l" type="button">Buat gambar</button>
+      <button id="c-edit" class="l" type="button">Edit foto</button>
+      <span id="c-mode-note">Tanya AI, pakai suara, atau buat visual.</span>
+    </div>
+    <div id="c-compose-row">
+      <button id="c-mic" class="mic l" type="button" aria-label="Gunakan mikrofon" title="Ubah suara menjadi teks"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="12" rx="3"></rect><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3m-4 0h8"></path></svg></button>
+      <textarea id="c-in" rows="3" placeholder="Tulis tugas atau pertanyaan…" aria-label="Tugas atau pesan untuk AI"></textarea>
+      <button id="c-send" class="g" type="button" aria-label="Kirim pesan">Kirim</button>
+    </div>
+  </div>
+  <div id="c-controls"><button id="c-voice" type="button">Mulai mode suara</button><button id="c-read" class="l" type="button">Bacakan jawaban</button><button id="c-fill" class="l hide" type="button">Isi kolom di halaman</button><button id="c-clr" class="l" type="button">Hapus chat</button><button id="c-close" class="l" type="button">Tutup</button></div>
   <p id="c-voice-status" class="note" role="status">Mode suara memerlukan browser yang mendukung pengenalan suara dan izin mikrofon.</p>
 </dialog>
 
@@ -317,7 +388,9 @@ dialog h3{margin:16px 0 4px;font-size:.95rem}
     if (!panel.classList.contains('open')) return;
     var w = panel.offsetWidth, h = panel.offsetHeight, bx = bubble.offsetLeft, by = bubble.offsetTop;
     var x = Math.min(Math.max(8, bx + SIZE - w), Math.max(8, stage.clientWidth - w - 8));
-    var y = by - h - 8; if (y < 8) y = by + SIZE + 8;
+    var y = by - h - 8;
+    if (y < 8 || y + h > stage.clientHeight - 8) y = by + SIZE + 8;
+    y = Math.max(8, Math.min(y, Math.max(8, stage.clientHeight - h - 8)));
     panel.style.left = x + 'px'; panel.style.top = y + 'px';
   }
   function showPanel(v) { panel.classList.toggle('open', v); bubble.setAttribute('aria-expanded', v); applyOp(S.op); place(); }
@@ -342,7 +415,7 @@ dialog h3{margin:16px 0 4px;font-size:.95rem}
 
   // ---- alur utama
   function validUrl(u) { try { return /^https?:$/.test(new URL(u).protocol); } catch (e) { return false; } }
-  function busy(b) { running = b; goBtn.style.display = b ? 'none' : 'block'; stopBtn.style.display = b ? 'block' : 'none'; $('#auto').disabled = b; }
+  function busy(b) { running = b; goBtn.style.display = b ? 'none' : 'flex'; stopBtn.style.display = b ? 'flex' : 'none'; $('#auto').disabled = b; }
 
   function askPreview(plans) {
     return new Promise(function (resolve) {
@@ -359,17 +432,10 @@ dialog h3{margin:16px 0 4px;font-size:.95rem}
     catch (e) { return false; }
   }
   var PAGE = null;
-  function setFrameSandbox(url) {
-    var f = $('#frame'), allow = 'allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox', sameOrigin = false;
-    try { sameOrigin = new URL(url, location.href).origin === location.origin; } catch (e) {}
-    // Hindari kombinasi allow-scripts + allow-same-origin untuk dokumen yang satu origin dengan aplikasi.
-    // Situs eksternal tetap mendapat allow-same-origin agar fungsi form/cookie situs tersebut tidak mudah rusak.
-    f.setAttribute('sandbox', allow + (sameOrigin ? '' : ' allow-same-origin'));
-  }
   function showPage(j) {
     PAGE = j; $('#empty').style.display = 'none'; $('#aib').classList.remove('hide');
     $('#newtab').href = j.finalUrl; $('#newtab').style.display = 'block';
-    if (j.frameable) { var f = $('#frame'); setFrameSandbox(j.finalUrl); f.src = j.finalUrl; f.style.display = 'block'; $('#reader').classList.add('hide'); return; }
+    if (j.frameable) { var f = $('#frame'); f.src = j.finalUrl; f.style.display = 'block'; $('#reader').classList.add('hide'); return; }
     $('#frame').style.display = 'none'; $('#frame').src = 'about:blank'; $('#reader').classList.remove('hide');
     $('#rd-title').textContent = j.title || 'Tanpa judul';
     var a = $('#rd-link'); a.href = j.finalUrl; a.textContent = j.finalUrl;
@@ -402,7 +468,7 @@ dialog h3{margin:16px 0 4px;font-size:.95rem}
       setStatus('Membaca & menganalisis form…', BUSY);
       var j = await call('/api/fill', { url: u, profile: S.profile }, ctl.signal);
       if (S.preview && !(await askPreview(j.plans))) { setStatus('Dibatalkan.', ERR); return; }
-      var f = $('#frame'); setFrameSandbox(j.prefill); f.src = j.prefill + '&embedded=true'; f.style.display = 'block'; $('#empty').style.display = 'none'; $('#reader').classList.add('hide');
+      var f = $('#frame'); f.src = j.prefill + '&embedded=true'; f.style.display = 'block'; $('#empty').style.display = 'none'; $('#reader').classList.add('hide');
       $('#newtab').href = j.prefill; $('#newtab').style.display = 'block';
       setStatus('Selesai: ' + j.filled + ' terisi, ' + (j.total - j.filled) + ' dilewati. Periksa dulu, lalu tekan Kirim sendiri.', OK);
     } catch (e) {
@@ -580,6 +646,57 @@ dialog h3{margin:16px 0 4px;font-size:.95rem}
     var m = document.createElement('div'); m.className = 'm ' + cls; m.textContent = text;
     var log = $('#c-log'); log.appendChild(m); log.scrollTop = log.scrollHeight; return m;
   }
+  function addImageMsg(cls, dataUrl, caption, downloadable) {
+    var m = document.createElement('div'); m.className = 'm ' + cls + ' image-message';
+    if (caption) { var cap = document.createElement('p'); cap.className = 'image-caption'; cap.textContent = caption; m.appendChild(cap); }
+    var img = document.createElement('img'); img.src = dataUrl; img.alt = caption || 'Gambar hasil FRANZZ AI'; img.loading = 'lazy'; m.appendChild(img);
+    if (downloadable) { var a = document.createElement('a'); a.href = dataUrl; a.download = 'franzz-ai-' + Date.now() + '.jpg'; a.textContent = 'Unduh gambar'; m.appendChild(a); }
+    $('#c-log').appendChild(m); $('#c-log').scrollTop = $('#c-log').scrollHeight; return m;
+  }
+  var imageAction = '', selectedImage = null;
+  function updateImageComposer() {
+    $('#c-gen').classList.toggle('active', imageAction === 'generate');
+    $('#c-edit').classList.toggle('active', imageAction === 'edit');
+    $('#c-mode-note').textContent = imageAction === 'generate' ? 'Mode buat gambar aktif. Jelaskan visual yang kamu mau.' : imageAction === 'edit' ? (selectedImage ? 'Foto siap diedit. Tulis perubahan yang kamu mau.' : 'Pilih foto terlebih dahulu untuk mengeditnya.') : 'Tanya AI, pakai suara, atau buat visual.';
+    $('#c-in').placeholder = imageAction === 'generate' ? 'Jelaskan gambar yang ingin dibuat…' : imageAction === 'edit' ? 'Jelaskan perubahan yang diinginkan pada foto…' : 'Tulis tugas atau pertanyaan…';
+    var preview = $('#c-image-preview'); preview.classList.toggle('hide', !selectedImage);
+    if (selectedImage) { $('#c-image-thumb').src = selectedImage.preview; $('#c-image-name').textContent = selectedImage.name || 'Foto terpilih'; $('#c-image-caption').textContent = 'Foto hanya dikirim untuk permintaan edit ini.'; }
+  }
+  function compressFile(file, maxSide, quality) {
+    return new Promise(function (resolve, reject) {
+      var url = URL.createObjectURL(file), im = new Image();
+      im.onload = function () {
+        URL.revokeObjectURL(url);
+        var scale = Math.min(1, maxSide / Math.max(im.naturalWidth, im.naturalHeight));
+        var canvas = document.createElement('canvas'); canvas.width = Math.max(1, Math.round(im.naturalWidth * scale)); canvas.height = Math.max(1, Math.round(im.naturalHeight * scale));
+        var cx = canvas.getContext('2d'); if (!cx) { reject(new Error('Browser tidak bisa memproses foto.')); return; }
+        cx.drawImage(im, 0, 0, canvas.width, canvas.height);
+        canvas.toBlob(function (blob) { if (blob) resolve(blob); else reject(new Error('Foto tidak bisa dikompres.')); }, 'image/jpeg', quality);
+      };
+      im.onerror = function () { URL.revokeObjectURL(url); reject(new Error('File ini bukan gambar yang bisa dibuka.')); };
+      im.src = url;
+    });
+  }
+  async function loadImageFile(file) {
+    if (!file) return;
+    if (!/^image\//i.test(file.type || '')) { setVoiceStatus('Pilih file gambar, seperti JPG, PNG, atau WEBP.'); return; }
+    if (file.size > 15000000) { setVoiceStatus('File asli terlalu besar (maksimal 15 MB).'); return; }
+    setVoiceStatus('Menyiapkan foto…');
+    try {
+      var blob = await compressFile(file, 1280, .78);
+      if (blob.size > 1000000) blob = await compressFile(file, 960, .65);
+      if (blob.size > 1100000) throw new Error('Foto masih terlalu besar setelah dikompres. Pilih foto lain.');
+      var dataUrl = await new Promise(function (resolve, reject) { var reader = new FileReader(); reader.onload = function () { resolve(String(reader.result)); }; reader.onerror = function () { reject(new Error('Foto gagal dibaca.')); }; reader.readAsDataURL(blob); });
+      selectedImage = { data: dataUrl.split(',')[1], mimeType: 'image/jpeg', preview: dataUrl, name: (file.name || 'Foto').slice(0, 90) };
+      imageAction = 'edit'; updateImageComposer(); setVoiceStatus('Foto siap. Tulis perubahan yang kamu inginkan, lalu kirim.'); $('#c-in').focus();
+    } catch (e) { setVoiceStatus(e.message || 'Foto gagal diproses.'); }
+  }
+  $('#c-image-file').addEventListener('change', function () { var file = this.files && this.files[0]; if (file) loadImageFile(file); this.value = ''; });
+  $('#c-attach').addEventListener('click', function () { imageAction = 'edit'; updateImageComposer(); $('#c-image-file').click(); });
+  $('#c-edit').addEventListener('click', function () { if (imageAction === 'edit') { imageAction = ''; selectedImage = null; updateImageComposer(); setVoiceStatus('Kembali ke Chat AI biasa.'); return; } imageAction = 'edit'; updateImageComposer(); $('#c-image-file').click(); });
+  $('#c-gen').addEventListener('click', function () { if (imageAction === 'generate') imageAction = ''; else { imageAction = 'generate'; selectedImage = null; } updateImageComposer(); $('#c-in').focus(); });
+  $('#c-image-remove').addEventListener('click', function () { selectedImage = null; if (imageAction === 'edit') imageAction = ''; updateImageComposer(); });
+  updateImageComposer();
   function ctxPage() {
     if (BR) {
       var f = BR.fields.map(function (x, i) { return (i + 1) + '. [' + x.type + '] ' + x.title + (x.options.length ? ' | pilihan: ' + x.options.join(' / ') : ''); }).join('\n');
@@ -603,7 +720,7 @@ dialog h3{margin:16px 0 4px;font-size:.95rem}
   function speechCtor() { return window.SpeechRecognition || window.webkitSpeechRecognition || null; }
   function setVoiceStatus(text) { $('#c-voice-status').textContent = text; }
   function updateVoiceButton() {
-    $('#c-voice').textContent = voiceMode ? '⏹ Hentikan mode suara' : '🎧 Mulai mode suara';
+    $('#c-voice').textContent = voiceMode ? 'Hentikan mode suara' : 'Mulai mode suara';
     $('#c-voice').classList.toggle('active', voiceMode);
   }
   function stopListening() {
@@ -612,7 +729,7 @@ dialog h3{margin:16px 0 4px;font-size:.95rem}
       old.onresult = null; old.onerror = null; old.onend = null;
       try { old.stop(); } catch (e) {}
     }
-    listening = false; $('#c-mic').textContent = '🎙 Bicara';
+    listening = false; $('#c-mic').classList.remove('listening'); $('#c-mic').setAttribute('aria-label', 'Gunakan mikrofon');
   }
   function startListening(dictateOnly) {
     var Ctor = speechCtor();
@@ -620,7 +737,7 @@ dialog h3{margin:16px 0 4px;font-size:.95rem}
     stopListening();
     try {
       var r = new Ctor(); recognition = r; r.lang = 'id-ID'; r.interimResults = false; r.continuous = false; r.maxAlternatives = 1;
-      r.onstart = function () { listening = true; $('#c-mic').textContent = '⏹ Berhenti mendengar'; setVoiceStatus('Sedang mendengarkan… silakan bicara.'); };
+      r.onstart = function () { listening = true; $('#c-mic').classList.add('listening'); $('#c-mic').setAttribute('aria-label', 'Berhenti mendengar'); setVoiceStatus('Sedang mendengarkan… silakan bicara.'); };
       r.onresult = function (e) {
         var transcript = e.results && e.results[0] && e.results[0][0] ? e.results[0][0].transcript.trim() : '';
         if (!transcript) return;
@@ -629,11 +746,11 @@ dialog h3{margin:16px 0 4px;font-size:.95rem}
         if (voiceMode && !dictateOnly) sendChat(true); else $('#c-in').focus();
       };
       r.onerror = function (e) {
-        listening = false; $('#c-mic').textContent = '🎙 Bicara';
+        listening = false; $('#c-mic').classList.remove('listening'); $('#c-mic').setAttribute('aria-label', 'Gunakan mikrofon');
         if (e.error !== 'aborted') setVoiceStatus('Mikrofon: ' + (e.error || 'tidak tersedia') + '. Periksa izin browser.');
       };
       r.onend = function () {
-        listening = false; $('#c-mic').textContent = '🎙 Bicara';
+        listening = false; $('#c-mic').classList.remove('listening'); $('#c-mic').setAttribute('aria-label', 'Gunakan mikrofon');
         if (voiceMode && !chatBusy && !dictateOnly) setVoiceStatus('Mode suara aktif. Menunggu ucapan berikutnya…');
       };
       r.start(); return true;
@@ -656,27 +773,45 @@ dialog h3{margin:16px 0 4px;font-size:.95rem}
     window.speechSynthesis.speak(u);
   }
   async function sendChat(readReply) {
-    var t = $('#c-in').value.trim();
+    var t = $('#c-in').value.trim(), action = imageAction, photo = selectedImage;
     if (!t || chatBusy) return;
-    stopListening(); chatBusy = true; $('#c-send').disabled = true; $('#c-in').value = '';
+    if (action === 'edit' && !photo) { setVoiceStatus('Pilih foto terlebih dahulu untuk mengeditnya.'); $('#c-image-file').click(); return; }
+    stopListening(); chatBusy = true; $('#c-send').disabled = true; $('#c-gen').disabled = true; $('#c-edit').disabled = true; $('#c-attach').disabled = true; $('#c-in').value = '';
     CHAT.push({ role: 'user', text: t }); addMsg('u', t);
-    var w = addMsg('a', 'Sedang berpikir…'), c = ctxPage();
+    if (action === 'edit' && photo) addImageMsg('u', photo.preview, 'Foto yang akan diedit', false);
+    var w = addMsg('a', action === 'generate' ? 'Sedang membuat gambar…' : action === 'edit' ? 'Sedang mengedit foto…' : 'Sedang berpikir…'), c = ctxPage();
     try {
-      var j = await call('/api/chat', { messages: CHAT.slice(-12), page: $('#c-use').checked && c ? c : undefined, mode: CHAT_MODE || undefined });
-      renderMd(w, j.text); CHAT.push({ role: 'assistant', text: j.text }); lastAnswer = j.text || '';
-      if (readReply || voiceMode) speakText(lastAnswer, !!voiceMode);
+      if (action) {
+        var payload = { action: action, prompt: t, aspectRatio: '1:1' };
+        if (action === 'edit' && photo) { payload.imageData = photo.data; payload.mimeType = photo.mimeType; }
+        var j = await call('/api/image', payload);
+        w.remove();
+        var dataUrl = 'data:' + (j.mimeType || 'image/jpeg') + ';base64,' + j.imageData;
+        addImageMsg('a', dataUrl, action === 'generate' ? 'Gambar berhasil dibuat.' : 'Foto selesai diedit.', true);
+        CHAT.push({ role: 'assistant', text: action === 'generate' ? 'Gambar berhasil dibuat.' : 'Foto selesai diedit.' });
+        lastAnswer = action === 'generate' ? 'Gambar berhasil dibuat.' : 'Foto selesai diedit.';
+        imageAction = ''; selectedImage = null; updateImageComposer();
+        setVoiceStatus('Gambar selesai. Kamu bisa mengunduh hasilnya dari kartu gambar.');
+      } else {
+        var j = await call('/api/chat', { messages: CHAT.slice(-12), page: $('#c-use').checked && c ? c : undefined, mode: CHAT_MODE || undefined });
+        renderMd(w, j.text); CHAT.push({ role: 'assistant', text: j.text }); lastAnswer = j.text || '';
+        if (readReply || voiceMode) speakText(lastAnswer, !!voiceMode);
+      }
     } catch (e) {
       CHAT.pop(); w.classList.add('e'); w.textContent = e instanceof TypeError ? 'Tidak bisa menghubungi server (' + e.message + ').' : e.message;
+      $('#c-in').value = t;
       if (voiceMode) setTimeout(function () { if (voiceMode) startListening(false); }, 500);
-    } finally { chatBusy = false; $('#c-send').disabled = false; $('#c-log').scrollTop = $('#c-log').scrollHeight; }
+    } finally {
+      chatBusy = false; $('#c-send').disabled = false; $('#c-gen').disabled = false; $('#c-edit').disabled = false; $('#c-attach').disabled = false; $('#c-log').scrollTop = $('#c-log').scrollHeight;
+    }
   }
   $('#chatdlg').addEventListener('close', function () {
     if (voiceMode) { voiceMode = false; stopListening(); updateVoiceButton(); }
     if ('speechSynthesis' in window) window.speechSynthesis.cancel();
   });
-  $('#chatb').addEventListener('click', function () { setMode(''); openChat(); });
+  $('#bot-chat').addEventListener('click', function () { showPanel(false); setMode(''); openChat(); });
   $('#c-close').addEventListener('click', function () { voiceMode = false; stopListening(); updateVoiceButton(); if ('speechSynthesis' in window) window.speechSynthesis.cancel(); $('#chatdlg').close(); });
-  $('#c-clr').addEventListener('click', function () { CHAT = []; lastAnswer = ''; $('#c-log').textContent = ''; });
+  $('#c-clr').addEventListener('click', function () { CHAT = []; lastAnswer = ''; $('#c-log').textContent = ''; $('#c-in').value = ''; imageAction = ''; selectedImage = null; updateImageComposer(); setVoiceStatus('Chat dibersihkan.'); });
   $('#c-send').addEventListener('click', function () { sendChat(false); });
   $('#c-mic').addEventListener('click', function () {
     if (listening) { stopListening(); setVoiceStatus('Mikrofon dihentikan.'); }
@@ -739,6 +874,19 @@ dialog h3{margin:16px 0 4px;font-size:.95rem}
   // ---- Fitur AI: menu belajar (tutor, penjelasan, ringkasan, cek jawaban + perkiraan skor, latihan soal)
   var CHAT_MODE = '';
   function el(tag, cls, text) { var n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; }
+  var ICON_D = {
+    tutor: 'M2 9l10-5 10 5-10 5z M6 11v5c3 2.5 9 2.5 12 0v-5 M22 9v6',
+    chat: 'M20 11.5a7.5 7.5 0 0 1-7.5 7.5H6l-3 2v-6.5A7.5 7.5 0 0 1 10.5 7H12',
+    book: 'M3 5.5A2.5 2.5 0 0 1 5.5 3H12v18H5.5A2.5 2.5 0 0 0 3 23z M21 5.5A2.5 2.5 0 0 0 18.5 3H12v18h6.5A2.5 2.5 0 0 1 21 23z',
+    list: 'M9 5h11M9 12h11M9 19h11M4 5h.01M4 12h.01M4 19h.01',
+    check: 'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z M7 12l3 3 7-7',
+    quiz: 'M8 4H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2 M9 2h6v4H9z M8 12h8M8 16h6'
+  };
+  function iconNode(kind, cls) {
+    var wrap = el('span', cls), ns = 'http://www.w3.org/2000/svg', svg = document.createElementNS(ns, 'svg'), path = document.createElementNS(ns, 'path');
+    svg.setAttribute('viewBox', '0 0 24 24'); svg.setAttribute('aria-hidden', 'true'); svg.setAttribute('focusable', 'false');
+    path.setAttribute('d', ICON_D[kind] || ICON_D.book); svg.appendChild(path); wrap.appendChild(svg); return wrap;
+  }
   // Markdown ringan yang aman: hanya membuat simpul DOM lewat textContent (tanpa innerHTML).
   function renderMd(box, src) {
     box.textContent = ''; box.classList.add('md');
@@ -797,14 +945,12 @@ dialog h3{margin:16px 0 4px;font-size:.95rem}
   }
 
   var STUDY = [
-    { id: 'tutor', ic: '🧑‍🏫', name: 'Tutor AI', sub: 'Dijelaskan bertahap, ada pertanyaan pengecekan' },
-    { id: 'ask', ic: '💬', name: 'Tanya AI', sub: 'Chat bebas, bisa pakai suara' },
-    { id: 'explain', ic: '📖', name: 'Penjelasan lengkap', sub: 'Konsep, langkah, contoh, kesalahan umum' },
-    { id: 'summary', ic: '📚', name: 'Ringkas Materi', sub: 'Poin penting dan pertanyaan pengecekan' },
-    { id: 'check', ic: '✅', name: 'Cek Jawaban', sub: 'Nilai jawabanmu sendiri + perkiraan skor' },
-    { id: 'quiz', ic: '📝', name: 'Latihan Soal', sub: 'Soal dari materi, dinilai + perkiraan skor' },
-    { id: 'scan', ic: '📷', name: 'Scan Soal', sub: 'Foto soal, lalu pelajari langkah penyelesaiannya' },
-    { id: 'chatgpt', ic: '↗️', name: 'Buka ChatGPT', sub: 'Buka ChatGPT di tab baru' }
+    { id: 'tutor', ic: 'tutor', name: 'Tutor AI', sub: 'Dijelaskan bertahap, ada pertanyaan pengecekan' },
+    { id: 'ask', ic: 'chat', name: 'Tanya AI', sub: 'Chat bebas, bisa pakai suara' },
+    { id: 'explain', ic: 'book', name: 'Penjelasan lengkap', sub: 'Konsep, langkah, contoh, kesalahan umum' },
+    { id: 'summary', ic: 'list', name: 'Ringkas Materi', sub: 'Poin penting dan pertanyaan pengecekan' },
+    { id: 'check', ic: 'check', name: 'Cek Jawaban', sub: 'Nilai jawabanmu sendiri + perkiraan skor' },
+    { id: 'quiz', ic: 'quiz', name: 'Latihan Soal', sub: 'Soal dari materi, dinilai + perkiraan skor' }
   ];
   function stField(label, node) { var w = el('div', 'st-f'); w.appendChild(el('label', null, label)); w.appendChild(node); return w; }
   function stTa(ph, rows) { var t = document.createElement('textarea'); t.className = 'st-in'; t.rows = rows || 4; t.placeholder = ph; return t; }
@@ -842,83 +988,6 @@ dialog h3{margin:16px 0 4px;font-size:.95rem}
           $('#c-log').textContent = ''; addMsg('u', msg); renderMd(addMsg('a', ''), j.text);
           $('#studydlg').close(); openChat();
         }));
-      });
-    });
-    body.appendChild(go); body.appendChild(box);
-  }
-
-  function viewScan() {
-    var body = $('#st-body');
-    body.appendChild(el('p', 'note', 'Ambil foto soal atau pilih gambar dari perangkat. AI akan membaca soal, menjelaskan konsep, dan menunjukkan langkah penyelesaiannya. Foto dikompres di browser sebelum dikirim.'));
-    var input = document.createElement('input'); input.type = 'file'; input.accept = 'image/jpeg,image/png,image/webp'; input.setAttribute('capture', 'environment'); input.className = 'st-in'; input.setAttribute('aria-label', 'Foto soal');
-    body.appendChild(stField('Foto soal (JPG, PNG, atau WebP)', input));
-    var preview = document.createElement('img'); preview.alt = 'Pratinjau foto soal'; preview.className = 'st-preview hide'; preview.style.cssText = 'display:block;max-width:100%;max-height:260px;object-fit:contain;margin:10px auto;border:1px solid #E3DDF7;border-radius:12px;background:#fff';
-    body.appendChild(preview);
-    var note = el('p', 'note', 'Gunakan foto yang terang, tidak miring, dan seluruh tulisan terlihat. Jangan unggah data pribadi.'); body.appendChild(note);
-    var instruction = stTa('Contoh: jelaskan dengan cara yang paling sederhana…', 2); body.appendChild(stField('Petunjuk tambahan (opsional)', instruction));
-    var box = el('div', 'st-res hide');
-    var objectUrl = '';
-    input.addEventListener('change', function () {
-      if (objectUrl) URL.revokeObjectURL(objectUrl);
-      objectUrl = '';
-      var file = input.files && input.files[0];
-      if (!file) { preview.classList.add('hide'); preview.removeAttribute('src'); return; }
-      if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
-        preview.classList.add('hide'); preview.removeAttribute('src');
-        box.className = 'st-res st-err'; box.textContent = 'Format belum didukung. Pilih JPG, PNG, atau WebP.'; return;
-      }
-      if (file.size > 12 * 1024 * 1024) {
-        preview.classList.add('hide'); preview.removeAttribute('src');
-        box.className = 'st-res st-err'; box.textContent = 'File foto maksimal 12 MB sebelum dikompres.'; return;
-      }
-      box.className = 'st-res hide'; box.textContent = '';
-      objectUrl = URL.createObjectURL(file); preview.src = objectUrl; preview.classList.remove('hide');
-    });
-    function fileToPayload(file) {
-      return new Promise(function (resolve, reject) {
-        var reader = new FileReader();
-        reader.onerror = function () { reject(new Error('Foto tidak bisa dibaca. Pilih file lain.')); };
-        reader.onload = function () {
-          var img = new Image();
-          img.onerror = function () { reject(new Error('Gambar tidak bisa dibuka browser. Gunakan JPG, PNG, atau WebP.')); };
-          img.onload = function () {
-            try {
-              var maxSide = 1600, scale = Math.min(1, maxSide / Math.max(img.naturalWidth || img.width, img.naturalHeight || img.height));
-              var canvas = document.createElement('canvas');
-              canvas.width = Math.max(1, Math.round((img.naturalWidth || img.width) * scale));
-              canvas.height = Math.max(1, Math.round((img.naturalHeight || img.height) * scale));
-              var ctx = canvas.getContext('2d'); if (!ctx) throw new Error('Browser tidak mendukung kompresi gambar.');
-              ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, canvas.width, canvas.height); ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-              function encode(quality, attempt) {
-                canvas.toBlob(function (blob) {
-                  if (!blob) { reject(new Error('Gagal mengompres foto. Coba gambar lain.')); return; }
-                  if (blob.size > 1400000 && attempt < 3) {
-                    canvas.width = Math.max(1, Math.round(canvas.width * .78)); canvas.height = Math.max(1, Math.round(canvas.height * .78));
-                    ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, canvas.width, canvas.height); ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                    encode(Math.max(.55, quality - .12), attempt + 1); return;
-                  }
-                  if (blob.size > 1500000) { reject(new Error('Foto masih terlalu besar setelah dikompres. Ambil foto lebih dekat atau potong bagian yang berisi soal.')); return; }
-                  var fr = new FileReader(); fr.onerror = function () { reject(new Error('Foto hasil kompresi gagal dibaca.')); };
-                  fr.onload = function () { var value = String(fr.result || ''), comma = value.indexOf(','); if (comma < 0) reject(new Error('Format foto tidak valid.')); else resolve({ mimeType: 'image/jpeg', data: value.slice(comma + 1) }); };
-                  fr.readAsDataURL(blob);
-                }, 'image/jpeg', quality);
-              }
-              encode(.82, 0);
-            } catch (e) { reject(e); }
-          };
-          img.src = String(reader.result || '');
-        };
-        reader.readAsDataURL(file);
-      });
-    }
-    var go = stBtn('Baca & jelaskan soal', 'g', function () {
-      var file = input.files && input.files[0]; box.classList.remove('hide');
-      if (!file) { stErr(box, new Error('Ambil foto atau pilih gambar soal terlebih dahulu.')); return; }
-      stRun(go, box, async function () {
-        var image = await fileToPayload(file);
-        var j = await call('/api/scan', { image: image, instruction: instruction.value.trim() });
-        box.className = 'st-res'; box.textContent = ''; renderMd(box, j.text);
-        box.appendChild(stBtn('Scan soal lain', 'l', function () { input.value = ''; preview.classList.add('hide'); preview.removeAttribute('src'); instruction.value = ''; box.className = 'st-res hide'; }));
       });
     });
     body.appendChild(go); body.appendChild(box);
@@ -1004,7 +1073,7 @@ dialog h3{margin:16px 0 4px;font-size:.95rem}
         var r = (j.items && j.items[i]) || {}, b = el('div', 'qbox' + (q.type === 'pilgan' ? (r.correct ? ' right' : ' wrong') : ''));
         b.appendChild(el('div', 'qn', (i + 1) + '. ' + q.q));
         if (q.type === 'pilgan') {
-          b.appendChild(el('p', null, (r.correct ? '✔ Benar' : '✖ Salah') + (r.chosen ? ' (jawabanmu: ' + r.chosen + ')' : ' (belum dijawab)')));
+          b.appendChild(el('p', null, (r.correct ? 'Benar' : 'Salah') + (r.chosen ? ' (jawabanmu: ' + r.chosen + ')' : ' (belum dijawab)')));
           if (!r.correct) b.appendChild(el('p', null, 'Jawaban benar: ' + r.ref));
         } else b.appendChild(el('p', null, 'Perkiraan nilai: ' + (r.score || 0) + '/100'));
         if (r.feedback) b.appendChild(el('p', 'fb', r.feedback));
@@ -1023,26 +1092,22 @@ dialog h3{margin:16px 0 4px;font-size:.95rem}
       if (id === 'tutor' && !$('#c-log').childNodes.length) addMsg('a', 'Hai! Aku tutormu. Tulis topik atau soal yang mau dipelajari, nanti kita bahas bertahap.');
       return;
     }
-    if (id === 'chatgpt') {
-      window.open('https://chatgpt.com/', '_blank', 'noopener,noreferrer');
-      return;
-    }
     var t = STUDY.filter(function (x) { return x.id === id; })[0];
-    $('#st-title').textContent = t.ic + ' ' + t.name; $('#st-body').textContent = '';
+    $('#st-title').textContent = t.name; $('#st-body').textContent = '';
     $('#st-menu').classList.add('hide'); $('#st-tool').classList.remove('hide');
-    if (id === 'check') viewCheck(); else if (id === 'quiz') viewQuiz(); else if (id === 'scan') viewScan(); else viewText(id);
+    if (id === 'check') viewCheck(); else if (id === 'quiz') viewQuiz(); else viewText(id);
   }
   function openStudy() {
     if (!$('#st-menu').childNodes.length) STUDY.forEach(function (t) {
       var b = el('button', 'st-row'); b.type = 'button';
-      b.appendChild(el('span', 'st-ic', t.ic));
+      b.appendChild(iconNode(t.ic, 'st-ic'));
       var d = el('span'); d.appendChild(el('b', null, t.name)); d.appendChild(el('small', null, t.sub)); b.appendChild(d);
       b.addEventListener('click', function () { openTool(t.id); });
       $('#st-menu').appendChild(b);
     });
     showMenu(); if (!$('#studydlg').open) $('#studydlg').showModal();
   }
-  $('#studyb').addEventListener('click', openStudy);
+  $('#bot-study').addEventListener('click', function () { showPanel(false); openStudy(); });
   $('#st-x').addEventListener('click', function () { $('#studydlg').close(); });
   $('#st-back').addEventListener('click', showMenu);
 
