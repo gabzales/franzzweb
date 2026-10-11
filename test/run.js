@@ -12,7 +12,8 @@ const data = [null, ['desc', [
   [112, 'OS yang dipakai?', null, 2, [[1002, [['Android'], ['iPhone'], ['', null, null, null, 1]], 1]]],
   [113, 'Fitur favorit', null, 4, [[1003, [['A'], ['B'], ['C']], 0]]],
   [114, 'Skala', null, 5, [[1004, [['1'], ['2'], ['3'], ['4'], ['5']], 1]]],
-  [115, 'Judul bagian', null, 8]
+  [115, 'Judul bagian', null, 8],
+  [116, 'Jelaskan bagaimana DNS menerjemahkan nama domain', null, 1, [[1005, null, 1]]]
 ]], 'title'];
 const HTML = '<html><script nonce="x">var FB_PUBLIC_LOAD_DATA_ = ' + JSON.stringify(data) + ';</script></html>';
 const FORM = 'https://docs.google.com/forms/d/e/ABC/viewform';
@@ -23,13 +24,28 @@ const realFetch = global.fetch;
 (async () => {
   // ---------- parser & Gemini (tetap) ----------
   const qs = parseForm(HTML);
-  assert.strictEqual(qs.length, 4); assert.deepStrictEqual(qs[1].options, ['Android', 'iPhone']);
+  assert.strictEqual(qs.length, 5); assert.deepStrictEqual(qs[1].options, ['Android', 'iPhone']);
+  assert.strictEqual(qs[4].type, 'essay', 'Google Forms paragraph should be detected as essay');
   const plans = buildPlans(qs, [{ id: 'q1', text: 'Budi', choices: [] }, { id: 'q2', choices: [0] }, { id: 'q3', choices: [0, 2, 9] }]);
   assert.strictEqual(prefillUrl(FORM + '?usp=send_form', plans), FORM + '?usp=pp_url&entry.1001=Budi&entry.1002=Android&entry.1003=A&entry.1003=C');
+  const essayText = ('DNS menerjemahkan nama domain menjadi alamat IP melalui resolver, cache, dan server DNS berjenjang. Contohnya, saat pengguna membuka situs, resolver mencari alamat IP yang sesuai agar browser terhubung ke server. ' ).repeat(5);
+  assert.ok(essayText.length > 500, 'regression fixture must exceed the old short-answer limit');
+  const essayPlans = buildPlans(qs, [{ id: 'q5', text: essayText }]);
+  assert.strictEqual(essayPlans.length, 1, 'essay response should be retained');
+  assert.strictEqual(essayPlans[0].q.type, 'essay');
+  assert.strictEqual(essayPlans[0].values[0], essayText.trim());
+  assert.strictEqual(buildPlans(qs, [{ id: 'q1', text: 'x'.repeat(501) }]).length, 0, 'short answers retain the 500 character guard');
+  assert.strictEqual(buildPlans(qs, [{ id: 'q5', text: 'x'.repeat(3001) }]).length, 0, 'essay answers above 3000 characters are rejected safely');
+  assert.ok(prefillUrl(FORM, essayPlans).includes('entry.1005='), 'essay answer should become a Google Forms prefill field');
   await assert.rejects(fetchForm('https://evil.example.com/x'), /hanya mendukung Google Forms/);
   let n = 0;
   global.fetch = async () => (++n < 3 ? { ok: false, status: 503 } : gem('{"answers":[{"id":"q1","text":"x"}]}'));
   assert.strictEqual((await answer({ key: 'k', models: ['m-one'], questions: [], delays: [5, 5] })).length, 1);
+  let essayPrompt = '';
+  global.fetch = async (u, o) => { essayPrompt = JSON.parse(o.body).contents[0].parts[0].text; return gem('{"answers":[{"id":"essay1","text":"Jawaban esai lengkap."}]}'); };
+  const generatedEssay = await answer({ key: 'k', models: ['m-one'], questions: [{ id: 'essay1', title: 'Jelaskan konsep DNS', type: 'essay', options: [] }], delays: [1] });
+  assert.strictEqual(generatedEssay[0].text, 'Jawaban esai lengkap.');
+  assert.match(essayPrompt, /type essay, write a complete, relevant answer/i, 'Gemini prompt should request a complete essay rather than a short keyword');
 
   // ---------- konfigurasi & admin dari env ----------
   let r = await api.status(); assert.strictEqual(r.body.configured, false, 'tanpa SESSION_SECRET: belum dikonfigurasi');
@@ -73,10 +89,10 @@ const realFetch = global.fetch;
 
   // ---------- belum ada API key ----------
   assert.strictEqual((await api.gemini({ questions: [{ id: 'q1', title: 'T', type: 'text' }] }, bearer(U))).status, 503);
-  r = await adm({ action: 'setSettings', geminiKey: 'AIzaSyAbCdEfGhIjKlMnOpQrStUvWxYz123456', model: 'model-test', fallback: '', defaultQuota: 50 });
+  r = await adm({ action: 'setSettings', geminiKey: 'fake-gemini-test-key-not-valid-123456', model: 'model-test', fallback: '', defaultQuota: 50 });
   assert.strictEqual(r.status, 200); assert.strictEqual(r.body.settings.hasKey, true); assert.strictEqual(r.body.settings.keyLast4, '3456');
-  assert.ok(!JSON.stringify(r.body).includes('AIzaSy'), 'key tidak boleh dikirim balik utuh');
-  const raw = await (await store()).get('settings'); assert.ok(!JSON.stringify(raw).includes('AIzaSy'), 'key harus terenkripsi di penyimpanan');
+  assert.ok(!JSON.stringify(r.body).includes('fake-gemini-test-key-not-valid-123456'), 'key tidak boleh dikirim balik utuh');
+  const raw = await (await store()).get('settings'); assert.ok(!JSON.stringify(raw).includes('fake-gemini-test-key-not-valid-123456'), 'key harus terenkripsi di penyimpanan');
   assert.strictEqual((await adm({ action: 'setSettings', model: 'bad model!' })).status, 400);
 
   // ---------- panggilan AI + kuota (budi: kuota 2) ----------
@@ -84,11 +100,18 @@ const realFetch = global.fetch;
   global.fetch = async (u, o) => { calls++; lastKey = o.headers['x-goog-api-key']; return gem('{"answers":[{"id":"q1","text":"Budi"}]}'); };
   const ask = () => api.gemini({ profile: 'p', questions: [{ id: 'q1', title: 'Nama', type: 'text', options: [], evil: 'x' }] }, bearer(U));
   r = await ask(); assert.strictEqual(r.status, 200); assert.strictEqual(r.body.answers[0].text, 'Budi');
-  assert.strictEqual(lastKey, 'AIzaSyAbCdEfGhIjKlMnOpQrStUvWxYz123456', 'server memakai key admin');
+  assert.strictEqual(lastKey, 'fake-gemini-test-key-not-valid-123456', 'server memakai key admin');
   assert.strictEqual((await ask()).status, 200);
   r = await ask(); assert.strictEqual(r.status, 429); assert.strictEqual(calls, 2, 'kuota habis tidak boleh memanggil Gemini');
   assert.strictEqual((await api.gemini({ questions: 'bukan array' }, bearer(A))).status, 400);
   assert.strictEqual((await api.gemini({ questions: [{ id: 'q1', title: 'x', type: 'aneh' }] }, bearer(A))).status, 400);
+  let apiEssayPrompt = '';
+  const essayApiText = 'x'.repeat(700);
+  global.fetch = async (u, o) => { apiEssayPrompt = JSON.parse(o.body).contents[0].parts[0].text; return gem(JSON.stringify({ answers: [{ id: 'essay1', text: essayApiText }] })); };
+  r = await api.gemini({ questions: [{ id: 'essay1', title: 'Jelaskan konsep DNS dengan lengkap', type: 'essay', options: [] }] }, bearer(A));
+  assert.strictEqual(r.status, 200, 'API must accept essay fields');
+  assert.strictEqual(r.body.answers[0].text.length, 700, 'API should preserve generated essay text');
+  assert.match(apiEssayPrompt, /type essay, write a complete, relevant answer/i);
 
   // kuota dikembalikan jika Gemini gagal (error non-sementara)
   await adm({ action: 'createUser', username: 'sari', password: 'password123', quota: 1 });

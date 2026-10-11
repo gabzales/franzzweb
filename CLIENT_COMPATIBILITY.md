@@ -11,7 +11,7 @@ Tanggal audit: 11 Oktober 2026.
 | Chat AI | `POST /api/chat` | `{messages,mode?,page?}` | `{text}` |
 | Buat gambar / edit foto | `POST /api/image` | `{action,prompt,aspectRatio?,imageData?,mimeType?}` | `{action,imageData,mimeType,text}` |
 | Analisis halaman | `POST /api/analyze` | `{title,url,text,instruction}` | `{text}` |
-| Scan & Fill | `POST /api/gemini` | `{questions,profile}` | `{answers}` |
+| Scan & Fill | `POST /api/gemini` | `{questions,profile}`; field types `single`, `multi`, `select`, `text`, `essay` | `{answers}`; `text` and `essay` return `text` |
 | Alat belajar | `POST /api/study` | `tool=check`, `quiz`, atau `grade` | skor / pertanyaan / hasil penilaian |
 
 ## Temuan dan tindak lanjut
@@ -28,3 +28,5 @@ Tanggal audit: 11 Oktober 2026.
 ## Status verifikasi
 
 Tes otomatis backend/web berjalan lokal dan lulus. Koneksi Firestore/Vercel production dan build APK perlu diuji di deployment/CI dengan kredensial serta Android SDK sebenarnya; tidak disamakan dengan tes mock atau pemeriksaan statis.
+
+- Kolom Google Forms tipe paragraf dikenali sebagai `essay`; input multiline Android/browser juga memakai tipe yang sama. Jawaban esai dapat berisi hingga 3.000 karakter, sementara jawaban singkat tetap dibatasi 500 karakter.

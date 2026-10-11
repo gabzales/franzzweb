@@ -12,4 +12,7 @@ for (const [route, method] of Object.entries({status:'GET',me:'GET',login:'POST'
 for (const tool of ['tutor','ask','explain','summary','check','quiz']) assert(html.includes(`id: '${tool}'`), `web tool ${tool} is missing`);
 for (const mode of ['tutor','explain','summary']) assert(studyFile.includes(`${mode}:`), `mode ${mode} is missing`);
 for (const endpoint of ['/api/chat','/api/image','/api/analyze','/api/gemini','/api/study']) assert(html.includes(endpoint), `front-end endpoint ${endpoint} is missing`);
-console.log('TES KONTRAK KLIEN WEB/API LULUS');
+assert(apiFile.includes("'essay'"), 'API must accept essay fields');
+assert(html.includes("tag === 'textarea' ? 'essay' : 'text'"), 'browser textarea should be recognized as essay');
+assert(html.includes("q.type === 'text' || q.type === 'essay'"), 'browser should fill essay fields');
+console.log('TES KONTRAK KLIEN WEB/API + ESAI LULUS');

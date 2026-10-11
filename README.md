@@ -120,3 +120,5 @@ Jalankan `npm install`, lalu `npm test` (termasuk adapter Firestore dengan fake 
 Aplikasi Android memakai backend yang sama dengan web; ia tidak menyimpan `GEMINI_API_KEY` atau kredensial Firebase di APK. Endpoint yang dipakai: `GET /api/status` untuk memeriksa server, `POST /api/login`, `POST /api/chat` (opsi `mode`: `tutor`, `explain`, `summary`), `POST /api/image` (generate/edit gambar), `POST /api/analyze`, `POST /api/gemini` untuk Scan & Fill, dan `POST /api/study` (`check`, `quiz`, `grade`). Semua permintaan AI memakai token sesi `Authorization: Bearer …`.
 
 Di APK, alamat server awal adalah `https://www.franzzorbit.my.id` dan tetap dapat diganti di layar login jika deploy lu memakai domain lain. Fitur baca layar hanya menggunakan Accessibility Service yang diaktifkan pengguna; kolom password dikecualikan, dan teks layar dikirim ke server hanya saat pengguna memilih opsi konteks layar atau menjalankan Scan & Fill / Analisis AI. Periksa jawaban yang disarankan sebelum menerapkannya ke aplikasi asal.
+
+Scan & Fill mendukung jawaban pendek serta kolom esai/paragraf hingga 3.000 karakter.

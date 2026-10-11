@@ -86,13 +86,13 @@ class FakeFirestore {
       type: 'service_account',
       project_id: 'orbit-test-2026',
       client_email: 'orbit-test@orbit-test-2026.iam.gserviceaccount.com',
-      private_key: '-----BEGIN PRIVATE KEY-----\ntest-key\n-----END PRIVATE KEY-----\n'
+      private_key: 'PRIVATE KEY - TEST DATA ONLY'
     };
     process.env.FIREBASE_SERVICE_ACCOUNT_JSON = JSON.stringify(credentials);
     assert.strictEqual(persistent(), true, 'valid service-account JSON enables persistent storage');
     const parsed = readFirebaseConfig();
     assert.strictEqual(parsed.projectId, 'orbit-test-2026');
-    assert.ok(parsed.credentials.private_key.includes('\ntest-key\n'));
+    assert.ok(parsed.credentials.private_key.includes('TEST DATA ONLY'));
     process.env.FIREBASE_SERVICE_ACCOUNT_BASE64 = Buffer.from(JSON.stringify(credentials)).toString('base64');
     assert.strictEqual(persistent(), false, 'using JSON and Base64 credential variables together is rejected');
     delete process.env.FIREBASE_SERVICE_ACCOUNT_BASE64;
