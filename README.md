@@ -46,6 +46,14 @@ Tombol **Fitur AI** di bar atas membuka menu belajar:
 - Endpoint: `/api/study` (`tool`: `check`, `quiz`, `grade`) dan `/api/chat` dengan `mode` (`tutor`, `explain`, `summary`). Logikanya di `lib/study.js`.
 - Sengaja tidak ada fitur menjawab soal ujian otomatis, mengatur nilai agar melewati KKM, atau menyamarkan penggunaan.
 
+## Editor Kode, Asisten Koding, dan tombol Cari (v0.4.0)
+- **Editor Kode**: robot FRANZZ > **Editor Kode** (atau Fitur AI > Asisten Koding). Tab banyak file, nomor baris, pewarna sintaks (JS/TS, HTML, CSS, JSON, PHP, Python, Java, C/C++, Go, Rust, Dart, SQL, Shell, YAML, Markdown), auto-indent, auto-tutup kurung/kutip, Tab/Shift+Tab, `Ctrl+/` komentar, `Ctrl+F` cari & ganti, `Ctrl+Enter` jalankan, baris tombol simbol untuk ponsel. File disimpan di browser (localStorage) dan bisa **Buka** dari / **Unduh** ke perangkat. Tanpa library luar, jadi cocok dengan CSP bawaan.
+- **Jalankan**: file HTML (CSS/JS dari tab lain dengan nama sama otomatis disisipkan) dan JavaScript berjalan di iframe `sandbox` dengan log `console`. Mengikuti CSP situs, jadi gambar/CDN dari luar tidak dimuat; pakai kode inline atau data URI.
+- **Asisten Koding AI** (tombol **AI** di editor): AI membaca file yang dibuka (atau bagian yang diblok), bisa menulis, menjelaskan, mereview, dan memperbaiki. Tiap blok kode punya tombol Salin / Sisipkan / Ganti / File baru. Memakai `/api/chat` dengan `mode: "code"` dan field `code` (`name`, `lang`, `text`, `sel`); 1 pesan = 1 kuota harian. Tanpa endpoint, database, atau variabel baru.
+- **Latihan Soal** kini bisa langsung dites: ketik topik singkat (< 80 karakter, mis. "Fotosintesis") atau tempel materi, atau tekan **Coba langsung**.
+- **Tombol Cari** (bar atas): link diperlakukan sebagai halaman yang dibuka dan dianalisis (tanpa isi otomatis); kata kunci membuka pencarian Google di tab baru.
+- **Scan & Fill lebih cepat**: form diunduh bersamaan dengan cek akun/kuota; soal esai dipisah dari pilihan/isian singkat (esai 3 per panggilan, lainnya 8, maks 4 paralel); bila model utama gagal sementara, model cadangan langsung dicoba tanpa menunggu jeda retry; status menampilkan lama proses.
+
 ## Chat AI dan situs lain
 - **Chat AI**: tombol "Chat AI" di bar atas. Percakapan multi-giliran (12 pesan terakhir dikirim ke AI), tidak disimpan di server.
   Kalau ada halaman terbuka (mode baca) atau datang dari bookmark Orbit, isinya bisa disertakan sebagai konteks (bisa dimatikan).

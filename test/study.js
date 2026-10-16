@@ -34,7 +34,14 @@ const study = (b, t) => api.study(b, t ? bearer(t) : {});
 
   // ---- Latihan Soal: buat
   const MATERI = 'Fotosintesis adalah proses tumbuhan mengubah cahaya matahari, air, dan karbon dioksida menjadi glukosa dan oksigen di dalam kloroplas.';
-  assert.strictEqual((await study({ tool: 'quiz', material: 'terlalu pendek' }, A)).status, 400);
+  assert.strictEqual((await study({ tool: 'quiz', material: '' }, A)).status, 400, 'tanpa materi/topik ditolak');
+  assert.strictEqual((await study({ tool: 'quiz', material: 'ab' }, A)).status, 400, 'topik minimal 3 karakter');
+  // topik pendek: bisa dites langsung tanpa menempel materi
+  reply = JSON.stringify({ questions: [{ type: 'pilgan', q: 'Gas apa yang dilepas fotosintesis?', options: ['Oksigen', 'Nitrogen', 'Helium', 'Argon'], ref: 0, why: 'O2.' }] });
+  prompts = [];
+  r = await study({ tool: 'quiz', material: 'Fotosintesis', count: 3, kind: 'pilgan' }, A);
+  assert.strictEqual(r.status, 200); assert.strictEqual(r.body.questions.length, 1);
+  assert.match(prompts[0], /tentang topik di bawah/); assert.match(prompts[0], /Topik: Fotosintesis/); assert.ok(!/Materi:/.test(prompts[0]), 'mode topik tidak memakai blok materi');
   reply = JSON.stringify({ questions: [
     { type: 'pilgan', q: 'Di mana fotosintesis terjadi?', options: ['Mitokondria', 'Kloroplas', 'Inti sel', 'Ribosom'], ref: 1, why: 'Kloroplas memiliki klorofil.' },
     { type: 'pilgan', q: 'ref di luar jangkauan', options: ['a', 'b', 'c', 'd'], ref: 9 },

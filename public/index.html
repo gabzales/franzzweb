@@ -5,14 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>FRANZZ Orbit</title>
 <link rel="icon" type="image/png" href="favicon.png">
+<link rel="stylesheet" href="editor.css">
 <style>
 :root{--purple:#7B3FE4;--blue:#2F6BFF;--ink:#1B1640;--grad:linear-gradient(135deg,#7B3FE4,#2F6BFF);--ok:#1F9D63;--err:#D9480F;--busy:#E0A100;--grey:#9AA0B4}
 *{box-sizing:border-box}
 html,body{height:100%;margin:0}
 body{font:16px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--ink);background:#fff}
 #app{display:flex;flex-direction:column;height:100%;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-.bar{display:flex;gap:6px;padding:8px}
-.bar input{flex:1;min-width:0;padding:10px 12px;border:1px solid #CFCBE6;border-radius:10px;font:inherit;color:var(--ink);background:#fff}
+.bar{display:flex;flex-wrap:wrap;gap:6px;padding:8px}
+.bar input{flex:1 1 150px;min-width:0;padding:10px 12px;border:1px solid #CFCBE6;border-radius:10px;font:inherit;color:var(--ink);background:#fff}
 button{font:600 .9rem system-ui,sans-serif;border:0;border-radius:10px;padding:9px 14px;color:#fff;cursor:pointer}
 .g{background:var(--grad)}.d{background:var(--ink)}.r{background:var(--err)}.l{background:#fff;color:var(--ink);border:1px solid #CFCBE6}
 button:focus-visible,input:focus-visible,textarea:focus-visible,#bubble:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
@@ -181,13 +182,14 @@ dialog h3{margin:16px 0 4px;font-size:.95rem}
 </div>
 <div id="app" class="hide">
   <div class="bar">
-    <input id="url" type="url" inputmode="url" placeholder="Tempel link apa saja (Google Form = isi otomatis)" aria-label="Link" autocomplete="off">
+    <input id="url" type="url" inputmode="url" placeholder="Kata kunci atau link…" aria-label="Link" autocomplete="off">
+    <button id="cari" class="l" type="button" aria-label="Cari kata kunci atau buka link">Cari</button>
     <button id="auto" class="g" type="button">Isi otomatis</button>
     <button id="admb" class="l hide" type="button">Admin</button>
     <button id="cfg" class="d" type="button" aria-label="Pengaturan">Pengaturan</button>
   </div>
   <div id="stage">
-    <p id="empty">Tempel link Google Form untuk diisi otomatis, atau link situs apa saja untuk dilihat dan dianalisis AI. Untuk situs yang butuh login, pakai bookmark Orbit (Pengaturan). Buka robot FRANZZ untuk mengakses Scan & Fill, Analisis AI, Fitur AI, dan Chat AI.</p>
+    <p id="empty">Tempel link Google Form lalu tekan Isi otomatis. Tekan Cari untuk membuka link situs apa saja (dilihat dan dianalisis AI) atau mencari kata kunci. Untuk situs yang butuh login, pakai bookmark Orbit (Pengaturan). Buka robot FRANZZ untuk Scan &amp; Fill, Analisis AI, Fitur AI, Chat AI, dan Editor Kode.</p>
     <div id="reader" class="hide">
       <h2 id="rd-title"></h2>
       <p class="mute"><a id="rd-link" target="_blank" rel="noopener noreferrer"></a></p>
@@ -210,6 +212,7 @@ dialog h3{margin:16px 0 4px;font-size:.95rem}
         <button id="aib" class="tool-btn hide" type="button"><span class="tool-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 19V5M4 19h16"/><path d="m7 15 4-4 3 3 6-7"/></svg></span><span class="tool-copy"><b>Analisis Halaman AI</b><small>Pahami isi situs yang sedang dibuka</small></span><span class="tool-arrow" aria-hidden="true">›</span></button>
         <button id="bot-study" class="tool-btn" type="button"><span class="tool-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 5.5A2.5 2.5 0 0 1 5.5 3H12v18H5.5A2.5 2.5 0 0 0 3 23z"/><path d="M21 5.5A2.5 2.5 0 0 0 18.5 3H12v18h6.5A2.5 2.5 0 0 1 21 23z"/></svg></span><span class="tool-copy"><b>Fitur AI</b><small>Tutor, ringkasan, cek jawaban, dan latihan</small></span><span class="tool-arrow" aria-hidden="true">›</span></button>
         <button id="bot-chat" class="tool-btn" type="button"><span class="tool-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H6l-3 2v-6.5A7.5 7.5 0 0 1 10.5 7H12"/><path d="M14 3h7v7h-7zM16 6.5h3"/></svg></span><span class="tool-copy"><b>Chat AI</b><small>Tanya apa saja, bisa menggunakan suara</small></span><span class="tool-arrow" aria-hidden="true">›</span></button>
+        <button id="bot-code" class="tool-btn" type="button"><span class="tool-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 8l-5 4 5 4M16 8l5 4-5 4M14 4l-4 16"/></svg></span><span class="tool-copy"><b>Editor Kode</b><small>Tulis dan review kode, dibantu AI</small></span><span class="tool-arrow" aria-hidden="true">›</span></button>
         <a id="newtab" href="#" target="_blank" rel="noopener noreferrer">Buka di tab baru</a>
       </div>
       <div id="oprow"><label for="op" id="oplabel">Opasitas 100%</label><input id="op" type="range" min="0" max="100" value="100"></div>
@@ -264,6 +267,58 @@ dialog h3{margin:16px 0 4px;font-size:.95rem}
   <div id="st-tool" class="hide"><button id="st-back" class="l" type="button">← Menu</button><h3 id="st-title"></h3><div id="st-body"></div></div>
 </dialog>
 
+<dialog id="codedlg" aria-label="Editor Kode">
+  <div id="ce-top">
+    <button id="ce-close" type="button" aria-label="Tutup editor">✕</button>
+    <b class="ce-ttl">Editor Kode</b>
+    <div class="ce-acts">
+      <button id="ce-run" class="g" type="button">▶ Jalankan</button>
+      <button id="ce-ai" class="g" type="button">AI</button>
+      <button id="ce-findb" type="button">Cari</button>
+      <button id="ce-new" type="button">Baru</button>
+      <button id="ce-openb" type="button">Buka</button>
+      <button id="ce-dl" type="button">Unduh</button>
+    </div>
+    <input id="ce-file" class="hide" type="file" multiple aria-label="Buka file dari perangkat">
+  </div>
+  <div id="ce-tabs" role="tablist" aria-label="File terbuka"></div>
+  <div id="ce-find" class="hide">
+    <input id="ce-q" placeholder="Cari…" aria-label="Kata yang dicari" autocomplete="off" spellcheck="false">
+    <input id="ce-r" placeholder="Ganti dengan…" aria-label="Ganti dengan" autocomplete="off" spellcheck="false">
+    <span id="ce-cnt" aria-live="polite"></span>
+    <button id="ce-fp" type="button" aria-label="Sebelumnya">‹</button><button id="ce-fn" type="button" aria-label="Berikutnya">›</button>
+    <button id="ce-case" type="button" title="Bedakan huruf besar/kecil">Aa</button>
+    <button id="ce-rep" type="button">Ganti</button><button id="ce-repall" type="button">Semua</button>
+    <button id="ce-fx" type="button" aria-label="Tutup pencarian">✕</button>
+  </div>
+  <div id="ce-main">
+    <div id="ce-col">
+      <div id="ce-ed">
+        <div id="ce-gut" aria-hidden="true"></div>
+        <div id="ce-wrap">
+          <pre id="ce-mk" aria-hidden="true"></pre>
+          <pre id="ce-hl" aria-hidden="true"></pre>
+          <textarea id="ce-ta" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" wrap="off" aria-label="Editor kode"></textarea>
+          <span id="ce-m" aria-hidden="true">MMMMMMMMMM</span>
+        </div>
+      </div>
+      <div id="ce-prevbox" class="hide">
+        <div class="ce-ph"><span>Hasil</span><button id="ce-pclear" type="button">Bersihkan log</button><button id="ce-pclose" type="button">Tutup</button></div>
+        <iframe id="ce-pf" title="Hasil kode" sandbox="allow-scripts allow-modals allow-forms"></iframe>
+        <pre id="ce-con" aria-live="polite"></pre>
+      </div>
+      <div id="ce-keys" aria-label="Tombol simbol"></div>
+    </div>
+    <div id="ce-side" class="hide">
+      <div class="ce-sh"><b>Asisten Koding AI</b><button id="ce-clr" type="button">Hapus chat</button><button id="ce-sx" type="button" aria-label="Tutup panel AI">✕</button></div>
+      <div id="ce-quick"></div>
+      <div id="ce-log" aria-live="polite"></div>
+      <div id="ce-compose"><textarea id="ce-in" rows="2" placeholder="Minta AI menulis atau mengubah kode…" aria-label="Pesan untuk AI"></textarea><button id="ce-send" class="g" type="button">Kirim</button></div>
+    </div>
+  </div>
+  <div id="ce-stat" role="status"></div>
+</dialog>
+
 <dialog id="adm">
   <h2>Admin</h2>
   <h3>Pengguna</h3>
@@ -308,6 +363,7 @@ dialog h3{margin:16px 0 4px;font-size:.95rem}
   <div class="row"><button id="pv-no" class="l" type="button">Batal</button><button id="pv-yes" class="g" type="button">Isi</button></div>
 </dialog>
 
+<script src="editor.js"></script>
 <script>
 (function () {
   var $ = function (s) { return document.querySelector(s); };
@@ -415,7 +471,7 @@ dialog h3{margin:16px 0 4px;font-size:.95rem}
 
   // ---- alur utama
   function validUrl(u) { try { return /^https?:$/.test(new URL(u).protocol); } catch (e) { return false; } }
-  function busy(b) { running = b; goBtn.style.display = b ? 'none' : 'flex'; stopBtn.style.display = b ? 'flex' : 'none'; $('#auto').disabled = b; }
+  function busy(b) { running = b; goBtn.style.display = b ? 'none' : 'flex'; stopBtn.style.display = b ? 'flex' : 'none'; $('#auto').disabled = b; $('#cari').disabled = b; }
 
   function askPreview(plans) {
     return new Promise(function (resolve) {
@@ -462,25 +518,49 @@ dialog h3{margin:16px 0 4px;font-size:.95rem}
     if (!/^[a-z]+:\/\//i.test(u)) { u = 'https://' + u; $('#url').value = u; }
     if (!validUrl(u)) { setStatus('Link tidak valid.', ERR); showPanel(true); return; }
     ctl = new AbortController(); busy(true); showPanel(true); $('#newtab').style.display = 'none';
+    var tick = null;
     try {
       if (!isGForm(u)) { await runPage(u); return; }
       $('#aib').classList.add('hide'); $('#reader').classList.add('hide'); PAGE = null;
+      var t0 = Date.now(); tick = setInterval(function () { setStatus('Membaca & menganalisis form… ' + Math.round((Date.now() - t0) / 1000) + ' dtk', BUSY); }, 1000);
       setStatus('Membaca & menganalisis form…', BUSY);
       var j = await call('/api/fill', { url: u, profile: S.profile }, ctl.signal);
+      clearInterval(tick); tick = null; var secs = Math.max(1, Math.round((Date.now() - t0) / 1000));
       if (S.preview && !(await askPreview(j.plans))) { setStatus('Dibatalkan.', ERR); return; }
       var f = $('#frame'); f.src = j.prefill + '&embedded=true'; f.style.display = 'block'; $('#empty').style.display = 'none'; $('#reader').classList.add('hide');
       $('#newtab').href = j.prefill; $('#newtab').style.display = 'block';
-      setStatus('Selesai: ' + j.filled + ' terisi, ' + (j.total - j.filled) + ' dilewati. Periksa dulu, lalu tekan Kirim sendiri.', OK);
+      setStatus('Selesai dalam ' + secs + ' dtk: ' + j.filled + ' terisi, ' + (j.total - j.filled) + ' dilewati. Periksa dulu, lalu tekan Kirim sendiri.', OK);
     } catch (e) {
+      if (e.name === 'AbortError') setStatus('Dihentikan.', ERR);
+      else if (e instanceof TypeError) setStatus('Tidak bisa menghubungi server (' + e.message + ').', ERR);
+      else setStatus(e.message || 'Terjadi kesalahan.', ERR);
+    } finally { if (tick) clearInterval(tick); busy(false); }
+  }
+  // ---- Cari: link -> buka halaman (tanpa isi otomatis); kata kunci -> pencarian Google di tab baru
+  function looksUrl(v) { return /^[a-z][a-z0-9+.-]*:\/\//i.test(v) || (!/\s/.test(v) && /^(?:localhost|[\w-]+(?:\.[\w-]+)+)(?::\d+)?(?:[\/?#]|$)/i.test(v)); }
+  async function cari() {
+    if (running) return;
+    var v = $('#url').value.trim();
+    if (!v) { setStatus('Ketik kata kunci atau tempel link dulu.', ERR); showPanel(true); $('#url').focus(); return; }
+    if (!looksUrl(v)) {
+      var a = document.createElement('a'); a.href = 'https://www.google.com/search?q=' + encodeURIComponent(v); a.target = '_blank'; a.rel = 'noopener noreferrer';
+      document.body.appendChild(a); a.click(); a.remove(); setStatus('Hasil pencarian "' + v.slice(0, 40) + '" dibuka di tab baru.', OK); return;
+    }
+    var u = /^[a-z][a-z0-9+.-]*:\/\//i.test(v) ? v : 'https://' + v; $('#url').value = u;
+    if (!validUrl(u)) { setStatus('Link tidak valid.', ERR); showPanel(true); return; }
+    ctl = new AbortController(); busy(true); showPanel(true); $('#newtab').style.display = 'none';
+    try { await runPage(u); }
+    catch (e) {
       if (e.name === 'AbortError') setStatus('Dihentikan.', ERR);
       else if (e instanceof TypeError) setStatus('Tidak bisa menghubungi server (' + e.message + ').', ERR);
       else setStatus(e.message || 'Terjadi kesalahan.', ERR);
     } finally { busy(false); }
   }
+  $('#cari').addEventListener('click', cari);
   $('#auto').addEventListener('click', run);
   goBtn.addEventListener('click', run);
   stopBtn.addEventListener('click', function () { if (ctl) ctl.abort(); });
-  $('#url').addEventListener('keydown', function (e) { if (e.key === 'Enter') run(); });
+  $('#url').addEventListener('keydown', function (e) { if (e.key === 'Enter') { if (looksUrl($('#url').value.trim())) run(); else cari(); } });
 
   // ---- pengaturan
   function openCfg() {
@@ -881,7 +961,8 @@ dialog h3{margin:16px 0 4px;font-size:.95rem}
     book: 'M3 5.5A2.5 2.5 0 0 1 5.5 3H12v18H5.5A2.5 2.5 0 0 0 3 23z M21 5.5A2.5 2.5 0 0 0 18.5 3H12v18h6.5A2.5 2.5 0 0 1 21 23z',
     list: 'M9 5h11M9 12h11M9 19h11M4 5h.01M4 12h.01M4 19h.01',
     check: 'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z M7 12l3 3 7-7',
-    quiz: 'M8 4H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2 M9 2h6v4H9z M8 12h8M8 16h6'
+    quiz: 'M8 4H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2 M9 2h6v4H9z M8 12h8M8 16h6',
+    code: 'M8 8l-5 4 5 4M16 8l5 4-5 4M14 4l-4 16'
   };
   function iconNode(kind, cls) {
     var wrap = el('span', cls), ns = 'http://www.w3.org/2000/svg', svg = document.createElementNS(ns, 'svg'), path = document.createElementNS(ns, 'path');
@@ -951,7 +1032,8 @@ dialog h3{margin:16px 0 4px;font-size:.95rem}
     { id: 'explain', ic: 'book', name: 'Penjelasan lengkap', sub: 'Konsep, langkah, contoh, kesalahan umum' },
     { id: 'summary', ic: 'list', name: 'Ringkas Materi', sub: 'Poin penting dan pertanyaan pengecekan' },
     { id: 'check', ic: 'check', name: 'Cek Jawaban', sub: 'Nilai jawabanmu sendiri + perkiraan skor' },
-    { id: 'quiz', ic: 'quiz', name: 'Latihan Soal', sub: 'Soal dari materi, dinilai + perkiraan skor' }
+    { id: 'quiz', ic: 'quiz', name: 'Latihan Soal', sub: 'Ketik topik atau tempel materi, dinilai + perkiraan skor' },
+    { id: 'code', ic: 'code', name: 'Asisten Koding', sub: 'AI menulis, review, dan memperbaiki kode di Editor Kode' }
   ];
   function stField(label, node) { var w = el('div', 'st-f'); w.appendChild(el('label', null, label)); w.appendChild(node); return w; }
   function stTa(ph, rows) { var t = document.createElement('textarea'); t.className = 'st-in'; t.rows = rows || 4; t.placeholder = ph; return t; }
@@ -1021,9 +1103,9 @@ dialog h3{margin:16px 0 4px;font-size:.95rem}
     var body = $('#st-body');
     function setup() {
       body.textContent = '';
-      body.appendChild(el('p', 'note', 'AI membuat soal dari materi, kamu menjawab, lalu AI menilai dan memberi perkiraan skor.'));
-      var ta = stTa('Tempel materi (beberapa kalimat atau lebih)…', 5);
-      body.appendChild(stField('Materi', ta));
+      body.appendChild(el('p', 'note', 'Ketik topik singkat (mis. Fotosintesis) atau tempel materi. AI membuat soal, kamu menjawab, lalu AI menilai dan memberi perkiraan skor.'));
+      var ta = stTa('Ketik topik (mis. Fotosintesis) atau tempel materi…', 5);
+      body.appendChild(stField('Topik atau materi', ta));
       var cx = stCtx(); if (cx) body.appendChild(cx.node);
       var cnt = stSel([['3', '3 soal'], ['5', '5 soal'], ['8', '8 soal']], '5'), kind = stSel([['campur', 'Campur'], ['pilgan', 'Pilihan ganda'], ['esai', 'Esai singkat']], 'campur');
       var row = el('div', 'st-row2'); row.appendChild(stField('Jumlah', cnt)); row.appendChild(stField('Jenis', kind)); body.appendChild(row);
@@ -1032,11 +1114,13 @@ dialog h3{margin:16px 0 4px;font-size:.95rem}
         var v = ta.value.trim(), pg = cx ? cx.on() : null;
         box.classList.remove('hide');
         stRun(go, box, async function () {
-          var j = await call('/api/study', { tool: 'quiz', material: v.length >= 80 ? v : undefined, page: v.length >= 80 ? undefined : (pg || undefined), count: Number(cnt.value), kind: kind.value });
+          var j = await call('/api/study', { tool: 'quiz', material: v || undefined, page: v ? undefined : (pg || undefined), count: Number(cnt.value), kind: kind.value });
           showQuestions(j.questions);
         });
       });
-      body.appendChild(go); body.appendChild(box);
+      body.appendChild(go);
+      body.appendChild(stBtn('Coba langsung', 'l', function () { ta.value = 'Fotosintesis'; cnt.value = '3'; kind.value = 'campur'; go.click(); }));
+      body.appendChild(box);
     }
     function showQuestions(qs) {
       body.textContent = '';
@@ -1088,6 +1172,7 @@ dialog h3{margin:16px 0 4px;font-size:.95rem}
 
   function showMenu() { $('#st-tool').classList.add('hide'); $('#st-menu').classList.remove('hide'); }
   function openTool(id) {
+    if (id === 'code') { $('#studydlg').close(); openEditor(true); return; }
     if (id === 'tutor' || id === 'ask') {
       setMode(id === 'tutor' ? 'tutor' : ''); $('#studydlg').close(); openChat();
       if (id === 'tutor' && !$('#c-log').childNodes.length) addMsg('a', 'Hai! Aku tutormu. Tulis topik atau soal yang mau dipelajari, nanti kita bahas bertahap.');
@@ -1108,6 +1193,9 @@ dialog h3{margin:16px 0 4px;font-size:.95rem}
     });
     showMenu(); if (!$('#studydlg').open) $('#studydlg').showModal();
   }
+  var ED = window.OrbitEditor ? window.OrbitEditor.init({ call: call, renderMd: renderMd, el: el }) : null;
+  function openEditor(withAI) { if (ED) ED.open(withAI); }
+  $('#bot-code').addEventListener('click', function () { showPanel(false); openEditor(false); });
   $('#bot-study').addEventListener('click', function () { showPanel(false); openStudy(); });
   $('#st-x').addEventListener('click', function () { $('#studydlg').close(); });
   $('#st-back').addEventListener('click', showMenu);
