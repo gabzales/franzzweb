@@ -1,6 +1,6 @@
 # Audit FRANZZ Orbit Web dan kompatibilitas klien
 
-Tanggal pemeriksaan: 11 Oktober 2026.
+Tanggal pemeriksaan: 18 Oktober 2026.
 
 ## Perbaikan yang sudah diterapkan
 
@@ -19,3 +19,10 @@ Tanggal pemeriksaan: 11 Oktober 2026.
 - Endpoint live `https://www.franzzorbit.my.id/api/status` dan halaman produksi tidak berhasil dibuka oleh alat inspeksi sesi ini, jadi status deployment live tidak diklaim terverifikasi.
 - Tes Firestore menggunakan fake/mock Firestore, bukan service account produksi. Setelah deploy, lakukan uji login admin, buat akun uji, logout/login akun tersebut, dan uji perubahan kuota untuk memastikan izin baca/tulis IAM benar.
 - Build Android penuh wajib dijalankan di GitHub Actions atau Android Studio dengan SDK sungguhan; ZIP Android memiliki workflow yang menyelaraskan versi Gradle dan compiler, tetapi source belum diklaim menghasilkan APK sampai workflow sukses.
+
+
+## Coding Lab added
+- Added authenticated `POST /api/code` with request-size bounds, action validation, user quota, model fallback, and text-only output parsing. Submitted code is not executed on the server.
+- Added a Coding Lab tool to the robot popup: generate/debug/explain/improve, code editor, save/download, a limited in-memory browser terminal, and sandboxed local runner.
+- Browser Python uses pinned Pyodide v314.0.7; JavaScript and HTML preview are sandboxed in cross-origin/opaque-origin iframes. Other languages are source-generation only unless the user provides a matching runtime. Terminal file operations are limited to the in-memory `/workspace`, and the server never executes user code.
+- Full Vercel production and browser integration not exercised from this isolated environment.

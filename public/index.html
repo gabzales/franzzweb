@@ -5,15 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>FRANZZ Orbit</title>
 <link rel="icon" type="image/png" href="favicon.png">
-<link rel="stylesheet" href="editor.css">
 <style>
 :root{--purple:#7B3FE4;--blue:#2F6BFF;--ink:#1B1640;--grad:linear-gradient(135deg,#7B3FE4,#2F6BFF);--ok:#1F9D63;--err:#D9480F;--busy:#E0A100;--grey:#9AA0B4}
 *{box-sizing:border-box}
 html,body{height:100%;margin:0}
 body{font:16px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--ink);background:#fff}
 #app{display:flex;flex-direction:column;height:100%;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-.bar{display:flex;flex-wrap:wrap;gap:6px;padding:8px}
-.bar input{flex:1 1 150px;min-width:0;padding:10px 12px;border:1px solid #CFCBE6;border-radius:10px;font:inherit;color:var(--ink);background:#fff}
+.bar{display:flex;gap:6px;padding:8px}
+.bar input{flex:1;min-width:0;padding:10px 12px;border:1px solid #CFCBE6;border-radius:10px;font:inherit;color:var(--ink);background:#fff}
 button{font:600 .9rem system-ui,sans-serif;border:0;border-radius:10px;padding:9px 14px;color:#fff;cursor:pointer}
 .g{background:var(--grad)}.d{background:var(--ink)}.r{background:var(--err)}.l{background:#fff;color:var(--ink);border:1px solid #CFCBE6}
 button:focus-visible,input:focus-visible,textarea:focus-visible,#bubble:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
@@ -165,6 +164,23 @@ dialog h3{margin:16px 0 4px;font-size:.95rem}
 .qbox.right{border-color:#9DD9B8;background:#F1FBF5}.qbox.wrong{border-color:#F3C9C4;background:#FFF7F6}
 .qn{font-weight:700;margin-bottom:6px}.qopt{display:block;padding:5px 2px;cursor:pointer}.qbox p{margin:.35em 0}.fb{color:#5A5780;font-size:.85rem}
 @media(max-width:480px){#studydlg{padding:14px}.st-row2{grid-template-columns:1fr}}
+
+/* Coding Lab: modern editor + sandboxed local runner */
+#codedlg{max-width:900px;width:calc(100% - 24px);padding:16px;background:linear-gradient(180deg,#fff,#F8F6FF);box-shadow:0 18px 60px rgba(27,22,64,.26)}
+#code-head{display:flex;align-items:center;gap:10px;padding:0 0 11px;margin-bottom:12px;border-bottom:1px solid #E8E3F8}
+#code-head h2{margin:0;font-size:1.08rem}#code-head .sub{font-size:.77rem;color:#686180;margin-top:2px}#code-head .sp{flex:1}
+#code-settings{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:9px}
+.code-label{font-size:.79rem;font-weight:750;margin:8px 0 4px;display:block}
+.code-select,#code-task,#code-editor{width:100%;border:1px solid #D9D1F1;border-radius:12px;padding:10px 12px;color:#221A43;background:#fff;font:inherit;min-width:0}
+#code-task{resize:vertical;min-height:72px;line-height:1.45}#code-editor{font:13px/1.55 ui-monospace,SFMono-Regular,Consolas,monospace;min-height:250px;max-height:44vh;resize:vertical;tab-size:4;white-space:pre;overflow:auto;background:#17152A;color:#EAE7FF;border:1px solid #37314D;caret-color:#B8A2FF}
+#code-toolbar{display:flex;flex-wrap:wrap;gap:7px;margin:10px 0}#code-toolbar button{font-size:.8rem;padding:8px 11px}
+#code-out{margin-top:9px;background:#11101F;color:#E2F7E9;border:1px solid #39354E;border-radius:12px;padding:11px;min-height:70px;max-height:180px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;font:12px/1.5 ui-monospace,SFMono-Regular,Consolas,monospace}
+#webterm-row{display:flex;gap:8px;align-items:center;margin-top:7px;padding:7px 8px;border:1px solid #39354E;border-radius:12px;background:#17152A;color:#B8A2FF}#webterm-row .prompt{font:700 13px ui-monospace,monospace}#code-command{flex:1;min-width:0;border:0;outline:0;background:transparent;color:#F0EDFF;font:12px ui-monospace,SFMono-Regular,Consolas,monospace;padding:8px 2px}#code-command-run{background:linear-gradient(135deg,#7950DB,#4C37A7);color:#fff;border:0;border-radius:9px;padding:9px 14px;font-weight:750}#webterm-note{font-size:.72rem;color:#77708E;margin:5px 0 0}
+#code-preview{width:100%;height:220px;border:1px solid #D9D1F1;background:#fff;border-radius:12px;margin-top:8px}
+#code-explanation{white-space:pre-wrap;line-height:1.5;font-size:.86rem;margin-top:8px;color:#4F486A}
+#code-note{font-size:.75rem;line-height:1.45;color:#77708E;margin:8px 0 0}
+@media(max-width:560px){#codedlg{padding:11px}#code-settings{grid-template-columns:1fr}#code-editor{min-height:220px;font-size:12px}#code-head h2{font-size:1rem}#code-toolbar button{flex:1}}
+
 </style>
 </head>
 <body>
@@ -182,14 +198,13 @@ dialog h3{margin:16px 0 4px;font-size:.95rem}
 </div>
 <div id="app" class="hide">
   <div class="bar">
-    <input id="url" type="url" inputmode="url" placeholder="Kata kunci atau link…" aria-label="Link" autocomplete="off">
-    <button id="cari" class="l" type="button" aria-label="Cari kata kunci atau buka link">Cari</button>
+    <input id="url" type="url" inputmode="url" placeholder="Tempel link apa saja (Google Form = isi otomatis)" aria-label="Link" autocomplete="off">
     <button id="auto" class="g" type="button">Isi otomatis</button>
     <button id="admb" class="l hide" type="button">Admin</button>
     <button id="cfg" class="d" type="button" aria-label="Pengaturan">Pengaturan</button>
   </div>
   <div id="stage">
-    <p id="empty">Tempel link Google Form lalu tekan Isi otomatis. Tekan Cari untuk membuka link situs apa saja (dilihat dan dianalisis AI) atau mencari kata kunci. Untuk situs yang butuh login, pakai bookmark Orbit (Pengaturan). Buka robot FRANZZ untuk Scan &amp; Fill, Analisis AI, Fitur AI, Chat AI, dan Editor Kode.</p>
+    <p id="empty">Tempel link Google Form untuk diisi otomatis, atau link situs apa saja untuk dilihat dan dianalisis AI. Untuk situs yang butuh login, pakai bookmark Orbit (Pengaturan). Buka robot FRANZZ untuk mengakses Scan & Fill, Analisis AI, Fitur AI, dan Chat AI.</p>
     <div id="reader" class="hide">
       <h2 id="rd-title"></h2>
       <p class="mute"><a id="rd-link" target="_blank" rel="noopener noreferrer"></a></p>
@@ -212,7 +227,7 @@ dialog h3{margin:16px 0 4px;font-size:.95rem}
         <button id="aib" class="tool-btn hide" type="button"><span class="tool-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 19V5M4 19h16"/><path d="m7 15 4-4 3 3 6-7"/></svg></span><span class="tool-copy"><b>Analisis Halaman AI</b><small>Pahami isi situs yang sedang dibuka</small></span><span class="tool-arrow" aria-hidden="true">›</span></button>
         <button id="bot-study" class="tool-btn" type="button"><span class="tool-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 5.5A2.5 2.5 0 0 1 5.5 3H12v18H5.5A2.5 2.5 0 0 0 3 23z"/><path d="M21 5.5A2.5 2.5 0 0 0 18.5 3H12v18h6.5A2.5 2.5 0 0 1 21 23z"/></svg></span><span class="tool-copy"><b>Fitur AI</b><small>Tutor, ringkasan, cek jawaban, dan latihan</small></span><span class="tool-arrow" aria-hidden="true">›</span></button>
         <button id="bot-chat" class="tool-btn" type="button"><span class="tool-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H6l-3 2v-6.5A7.5 7.5 0 0 1 10.5 7H12"/><path d="M14 3h7v7h-7zM16 6.5h3"/></svg></span><span class="tool-copy"><b>Chat AI</b><small>Tanya apa saja, bisa menggunakan suara</small></span><span class="tool-arrow" aria-hidden="true">›</span></button>
-        <button id="bot-code" class="tool-btn" type="button"><span class="tool-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 8l-5 4 5 4M16 8l5 4-5 4M14 4l-4 16"/></svg></span><span class="tool-copy"><b>Editor Kode</b><small>Tulis dan review kode, dibantu AI</small></span><span class="tool-arrow" aria-hidden="true">›</span></button>
+        <button id="bot-code" class="tool-btn" type="button"><span class="tool-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m8 8-4 4 4 4M16 8l4 4-4 4M14 4l-4 16"/></svg></span><span class="tool-copy"><b>Coding Lab &amp; Terminal</b><small>Buat kode berbagai bahasa, jalankan Python/JavaScript, dan pakai terminal workspace</small></span><span class="tool-arrow" aria-hidden="true">›</span></button>
         <a id="newtab" href="#" target="_blank" rel="noopener noreferrer">Buka di tab baru</a>
       </div>
       <div id="oprow"><label for="op" id="oplabel">Opasitas 100%</label><input id="op" type="range" min="0" max="100" value="100"></div>
@@ -267,56 +282,22 @@ dialog h3{margin:16px 0 4px;font-size:.95rem}
   <div id="st-tool" class="hide"><button id="st-back" class="l" type="button">← Menu</button><h3 id="st-title"></h3><div id="st-body"></div></div>
 </dialog>
 
-<dialog id="codedlg" aria-label="Editor Kode">
-  <div id="ce-top">
-    <button id="ce-close" type="button" aria-label="Tutup editor">✕</button>
-    <b class="ce-ttl">Editor Kode</b>
-    <div class="ce-acts">
-      <button id="ce-run" class="g" type="button">▶ Jalankan</button>
-      <button id="ce-ai" class="g" type="button">AI</button>
-      <button id="ce-findb" type="button">Cari</button>
-      <button id="ce-new" type="button">Baru</button>
-      <button id="ce-openb" type="button">Buka</button>
-      <button id="ce-dl" type="button">Unduh</button>
-    </div>
-    <input id="ce-file" class="hide" type="file" multiple aria-label="Buka file dari perangkat">
+<dialog id="codedlg">
+  <div id="code-head"><div><h2>Coding Lab</h2><div class="sub">AI coding assistant • editor • terminal lokal</div></div><span class="sp"></span><button id="code-close" class="l" type="button">Tutup</button></div>
+  <div id="code-settings">
+    <div><label class="code-label" for="code-language">Bahasa pemrograman</label><select id="code-language" class="code-select"><option>Python</option><option>JavaScript</option><option>HTML/CSS</option><option>Java</option><option>Kotlin</option><option>PHP</option><option>C++</option><option>C#</option><option>SQL</option><option>Bash</option><option>Go</option><option>Rust</option><option>TypeScript</option></select></div>
+    <div><label class="code-label" for="code-action">Tindakan AI</label><select id="code-action" class="code-select"><option value="generate">Buat kode</option><option value="debug">Debug kode</option><option value="explain">Jelaskan kode</option><option value="improve">Optimalkan kode</option></select></div>
   </div>
-  <div id="ce-tabs" role="tablist" aria-label="File terbuka"></div>
-  <div id="ce-find" class="hide">
-    <input id="ce-q" placeholder="Cari…" aria-label="Kata yang dicari" autocomplete="off" spellcheck="false">
-    <input id="ce-r" placeholder="Ganti dengan…" aria-label="Ganti dengan" autocomplete="off" spellcheck="false">
-    <span id="ce-cnt" aria-live="polite"></span>
-    <button id="ce-fp" type="button" aria-label="Sebelumnya">‹</button><button id="ce-fn" type="button" aria-label="Berikutnya">›</button>
-    <button id="ce-case" type="button" title="Bedakan huruf besar/kecil">Aa</button>
-    <button id="ce-rep" type="button">Ganti</button><button id="ce-repall" type="button">Semua</button>
-    <button id="ce-fx" type="button" aria-label="Tutup pencarian">✕</button>
-  </div>
-  <div id="ce-main">
-    <div id="ce-col">
-      <div id="ce-ed">
-        <div id="ce-gut" aria-hidden="true"></div>
-        <div id="ce-wrap">
-          <pre id="ce-mk" aria-hidden="true"></pre>
-          <pre id="ce-hl" aria-hidden="true"></pre>
-          <textarea id="ce-ta" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" wrap="off" aria-label="Editor kode"></textarea>
-          <span id="ce-m" aria-hidden="true">MMMMMMMMMM</span>
-        </div>
-      </div>
-      <div id="ce-prevbox" class="hide">
-        <div class="ce-ph"><span>Hasil</span><button id="ce-pclear" type="button">Bersihkan log</button><button id="ce-pclose" type="button">Tutup</button></div>
-        <iframe id="ce-pf" title="Hasil kode" sandbox="allow-scripts allow-modals allow-forms"></iframe>
-        <pre id="ce-con" aria-live="polite"></pre>
-      </div>
-      <div id="ce-keys" aria-label="Tombol simbol"></div>
-    </div>
-    <div id="ce-side" class="hide">
-      <div class="ce-sh"><b>Asisten Koding AI</b><button id="ce-clr" type="button">Hapus chat</button><button id="ce-sx" type="button" aria-label="Tutup panel AI">✕</button></div>
-      <div id="ce-quick"></div>
-      <div id="ce-log" aria-live="polite"></div>
-      <div id="ce-compose"><textarea id="ce-in" rows="2" placeholder="Minta AI menulis atau mengubah kode…" aria-label="Pesan untuk AI"></textarea><button id="ce-send" class="g" type="button">Kirim</button></div>
-    </div>
-  </div>
-  <div id="ce-stat" role="status"></div>
+  <label class="code-label" for="code-task">Jelaskan kebutuhan / error</label><textarea id="code-task" class="code-select" rows="2" placeholder="Contoh: Buat aplikasi kalkulator Python dengan validasi input dan menu..." spellcheck="false"></textarea>
+  <label class="code-label" for="code-editor">Editor kode</label><textarea id="code-editor" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="Editor kode">print("Halo dari FRANZZ Coding Lab!")
+</textarea>
+  <div id="code-toolbar"><button id="code-ai" class="g" type="button">Minta AI</button><button id="code-run" class="d" type="button">Jalankan lokal</button><button id="code-save" class="l" type="button">Simpan file</button><button id="code-copy" class="l" type="button">Salin kode</button><button id="code-clear" class="l" type="button">Bersihkan terminal</button></div>
+  <label class="code-label" for="code-out">Terminal / output</label><pre id="code-out" role="status" aria-live="polite">FRANZZ terminal siap. Ketik help untuk perintah yang tersedia.</pre>
+  <div id="webterm-row"><span class="prompt" aria-hidden="true">$</span><input id="code-command" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Perintah terminal" placeholder="help, pwd, ls, echo halo, python main.py"><button id="code-command-run" type="button">Run</button></div>
+  <p id="webterm-note">Shell workspace berbasis browser: perintah dasar + runner Python/JavaScript terisolasi. Ini bukan distro Linux/Termux penuh; tidak ada akses ke shell atau file sistem server.</p>
+  <iframe id="code-preview" class="hide" title="Preview HTML sandbox" sandbox="allow-scripts" referrerpolicy="no-referrer"></iframe>
+  <div id="code-explanation"></div>
+  <p id="code-note">AI dapat membuat banyak bahasa pemrograman, tetapi runner di browser hanya mengeksekusi Python dan JavaScript. HTML/CSS dirender di iframe terisolasi. Bahasa lain disediakan untuk ditulis/disimpan; perlu runtime yang sesuai untuk menjalankannya. Kode dijalankan di perangkat/browser, bukan di server FRANZZ.</p>
 </dialog>
 
 <dialog id="adm">
@@ -363,7 +344,6 @@ dialog h3{margin:16px 0 4px;font-size:.95rem}
   <div class="row"><button id="pv-no" class="l" type="button">Batal</button><button id="pv-yes" class="g" type="button">Isi</button></div>
 </dialog>
 
-<script src="editor.js"></script>
 <script>
 (function () {
   var $ = function (s) { return document.querySelector(s); };
@@ -471,7 +451,7 @@ dialog h3{margin:16px 0 4px;font-size:.95rem}
 
   // ---- alur utama
   function validUrl(u) { try { return /^https?:$/.test(new URL(u).protocol); } catch (e) { return false; } }
-  function busy(b) { running = b; goBtn.style.display = b ? 'none' : 'flex'; stopBtn.style.display = b ? 'flex' : 'none'; $('#auto').disabled = b; $('#cari').disabled = b; }
+  function busy(b) { running = b; goBtn.style.display = b ? 'none' : 'flex'; stopBtn.style.display = b ? 'flex' : 'none'; $('#auto').disabled = b; }
 
   function askPreview(plans) {
     return new Promise(function (resolve) {
@@ -518,49 +498,25 @@ dialog h3{margin:16px 0 4px;font-size:.95rem}
     if (!/^[a-z]+:\/\//i.test(u)) { u = 'https://' + u; $('#url').value = u; }
     if (!validUrl(u)) { setStatus('Link tidak valid.', ERR); showPanel(true); return; }
     ctl = new AbortController(); busy(true); showPanel(true); $('#newtab').style.display = 'none';
-    var tick = null;
     try {
       if (!isGForm(u)) { await runPage(u); return; }
       $('#aib').classList.add('hide'); $('#reader').classList.add('hide'); PAGE = null;
-      var t0 = Date.now(); tick = setInterval(function () { setStatus('Membaca & menganalisis form… ' + Math.round((Date.now() - t0) / 1000) + ' dtk', BUSY); }, 1000);
       setStatus('Membaca & menganalisis form…', BUSY);
       var j = await call('/api/fill', { url: u, profile: S.profile }, ctl.signal);
-      clearInterval(tick); tick = null; var secs = Math.max(1, Math.round((Date.now() - t0) / 1000));
       if (S.preview && !(await askPreview(j.plans))) { setStatus('Dibatalkan.', ERR); return; }
       var f = $('#frame'); f.src = j.prefill + '&embedded=true'; f.style.display = 'block'; $('#empty').style.display = 'none'; $('#reader').classList.add('hide');
       $('#newtab').href = j.prefill; $('#newtab').style.display = 'block';
-      setStatus('Selesai dalam ' + secs + ' dtk: ' + j.filled + ' terisi, ' + (j.total - j.filled) + ' dilewati. Periksa dulu, lalu tekan Kirim sendiri.', OK);
+      setStatus('Selesai: ' + j.filled + ' terisi, ' + (j.total - j.filled) + ' dilewati. Periksa dulu, lalu tekan Kirim sendiri.', OK);
     } catch (e) {
-      if (e.name === 'AbortError') setStatus('Dihentikan.', ERR);
-      else if (e instanceof TypeError) setStatus('Tidak bisa menghubungi server (' + e.message + ').', ERR);
-      else setStatus(e.message || 'Terjadi kesalahan.', ERR);
-    } finally { if (tick) clearInterval(tick); busy(false); }
-  }
-  // ---- Cari: link -> buka halaman (tanpa isi otomatis); kata kunci -> pencarian Google di tab baru
-  function looksUrl(v) { return /^[a-z][a-z0-9+.-]*:\/\//i.test(v) || (!/\s/.test(v) && /^(?:localhost|[\w-]+(?:\.[\w-]+)+)(?::\d+)?(?:[\/?#]|$)/i.test(v)); }
-  async function cari() {
-    if (running) return;
-    var v = $('#url').value.trim();
-    if (!v) { setStatus('Ketik kata kunci atau tempel link dulu.', ERR); showPanel(true); $('#url').focus(); return; }
-    if (!looksUrl(v)) {
-      var a = document.createElement('a'); a.href = 'https://www.google.com/search?q=' + encodeURIComponent(v); a.target = '_blank'; a.rel = 'noopener noreferrer';
-      document.body.appendChild(a); a.click(); a.remove(); setStatus('Hasil pencarian "' + v.slice(0, 40) + '" dibuka di tab baru.', OK); return;
-    }
-    var u = /^[a-z][a-z0-9+.-]*:\/\//i.test(v) ? v : 'https://' + v; $('#url').value = u;
-    if (!validUrl(u)) { setStatus('Link tidak valid.', ERR); showPanel(true); return; }
-    ctl = new AbortController(); busy(true); showPanel(true); $('#newtab').style.display = 'none';
-    try { await runPage(u); }
-    catch (e) {
       if (e.name === 'AbortError') setStatus('Dihentikan.', ERR);
       else if (e instanceof TypeError) setStatus('Tidak bisa menghubungi server (' + e.message + ').', ERR);
       else setStatus(e.message || 'Terjadi kesalahan.', ERR);
     } finally { busy(false); }
   }
-  $('#cari').addEventListener('click', cari);
   $('#auto').addEventListener('click', run);
   goBtn.addEventListener('click', run);
   stopBtn.addEventListener('click', function () { if (ctl) ctl.abort(); });
-  $('#url').addEventListener('keydown', function (e) { if (e.key === 'Enter') { if (looksUrl($('#url').value.trim())) run(); else cari(); } });
+  $('#url').addEventListener('keydown', function (e) { if (e.key === 'Enter') run(); });
 
   // ---- pengaturan
   function openCfg() {
@@ -961,8 +917,7 @@ dialog h3{margin:16px 0 4px;font-size:.95rem}
     book: 'M3 5.5A2.5 2.5 0 0 1 5.5 3H12v18H5.5A2.5 2.5 0 0 0 3 23z M21 5.5A2.5 2.5 0 0 0 18.5 3H12v18h6.5A2.5 2.5 0 0 1 21 23z',
     list: 'M9 5h11M9 12h11M9 19h11M4 5h.01M4 12h.01M4 19h.01',
     check: 'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z M7 12l3 3 7-7',
-    quiz: 'M8 4H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2 M9 2h6v4H9z M8 12h8M8 16h6',
-    code: 'M8 8l-5 4 5 4M16 8l5 4-5 4M14 4l-4 16'
+    quiz: 'M8 4H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2 M9 2h6v4H9z M8 12h8M8 16h6'
   };
   function iconNode(kind, cls) {
     var wrap = el('span', cls), ns = 'http://www.w3.org/2000/svg', svg = document.createElementNS(ns, 'svg'), path = document.createElementNS(ns, 'path');
@@ -1032,8 +987,7 @@ dialog h3{margin:16px 0 4px;font-size:.95rem}
     { id: 'explain', ic: 'book', name: 'Penjelasan lengkap', sub: 'Konsep, langkah, contoh, kesalahan umum' },
     { id: 'summary', ic: 'list', name: 'Ringkas Materi', sub: 'Poin penting dan pertanyaan pengecekan' },
     { id: 'check', ic: 'check', name: 'Cek Jawaban', sub: 'Nilai jawabanmu sendiri + perkiraan skor' },
-    { id: 'quiz', ic: 'quiz', name: 'Latihan Soal', sub: 'Ketik topik atau tempel materi, dinilai + perkiraan skor' },
-    { id: 'code', ic: 'code', name: 'Asisten Koding', sub: 'AI menulis, review, dan memperbaiki kode di Editor Kode' }
+    { id: 'quiz', ic: 'quiz', name: 'Latihan Soal', sub: 'Soal dari materi, dinilai + perkiraan skor' }
   ];
   function stField(label, node) { var w = el('div', 'st-f'); w.appendChild(el('label', null, label)); w.appendChild(node); return w; }
   function stTa(ph, rows) { var t = document.createElement('textarea'); t.className = 'st-in'; t.rows = rows || 4; t.placeholder = ph; return t; }
@@ -1103,9 +1057,9 @@ dialog h3{margin:16px 0 4px;font-size:.95rem}
     var body = $('#st-body');
     function setup() {
       body.textContent = '';
-      body.appendChild(el('p', 'note', 'Ketik topik singkat (mis. Fotosintesis) atau tempel materi. AI membuat soal, kamu menjawab, lalu AI menilai dan memberi perkiraan skor.'));
-      var ta = stTa('Ketik topik (mis. Fotosintesis) atau tempel materi…', 5);
-      body.appendChild(stField('Topik atau materi', ta));
+      body.appendChild(el('p', 'note', 'AI membuat soal dari materi, kamu menjawab, lalu AI menilai dan memberi perkiraan skor.'));
+      var ta = stTa('Tempel materi (beberapa kalimat atau lebih)…', 5);
+      body.appendChild(stField('Materi', ta));
       var cx = stCtx(); if (cx) body.appendChild(cx.node);
       var cnt = stSel([['3', '3 soal'], ['5', '5 soal'], ['8', '8 soal']], '5'), kind = stSel([['campur', 'Campur'], ['pilgan', 'Pilihan ganda'], ['esai', 'Esai singkat']], 'campur');
       var row = el('div', 'st-row2'); row.appendChild(stField('Jumlah', cnt)); row.appendChild(stField('Jenis', kind)); body.appendChild(row);
@@ -1114,13 +1068,11 @@ dialog h3{margin:16px 0 4px;font-size:.95rem}
         var v = ta.value.trim(), pg = cx ? cx.on() : null;
         box.classList.remove('hide');
         stRun(go, box, async function () {
-          var j = await call('/api/study', { tool: 'quiz', material: v || undefined, page: v ? undefined : (pg || undefined), count: Number(cnt.value), kind: kind.value });
+          var j = await call('/api/study', { tool: 'quiz', material: v.length >= 80 ? v : undefined, page: v.length >= 80 ? undefined : (pg || undefined), count: Number(cnt.value), kind: kind.value });
           showQuestions(j.questions);
         });
       });
-      body.appendChild(go);
-      body.appendChild(stBtn('Coba langsung', 'l', function () { ta.value = 'Fotosintesis'; cnt.value = '3'; kind.value = 'campur'; go.click(); }));
-      body.appendChild(box);
+      body.appendChild(go); body.appendChild(box);
     }
     function showQuestions(qs) {
       body.textContent = '';
@@ -1172,7 +1124,6 @@ dialog h3{margin:16px 0 4px;font-size:.95rem}
 
   function showMenu() { $('#st-tool').classList.add('hide'); $('#st-menu').classList.remove('hide'); }
   function openTool(id) {
-    if (id === 'code') { $('#studydlg').close(); openEditor(true); return; }
     if (id === 'tutor' || id === 'ask') {
       setMode(id === 'tutor' ? 'tutor' : ''); $('#studydlg').close(); openChat();
       if (id === 'tutor' && !$('#c-log').childNodes.length) addMsg('a', 'Hai! Aku tutormu. Tulis topik atau soal yang mau dipelajari, nanti kita bahas bertahap.');
@@ -1193,12 +1144,175 @@ dialog h3{margin:16px 0 4px;font-size:.95rem}
     });
     showMenu(); if (!$('#studydlg').open) $('#studydlg').showModal();
   }
-  var ED = window.OrbitEditor ? window.OrbitEditor.init({ call: call, renderMd: renderMd, el: el }) : null;
-  function openEditor(withAI) { if (ED) ED.open(withAI); }
-  $('#bot-code').addEventListener('click', function () { showPanel(false); openEditor(false); });
   $('#bot-study').addEventListener('click', function () { showPanel(false); openStudy(); });
   $('#st-x').addEventListener('click', function () { $('#studydlg').close(); });
   $('#st-back').addEventListener('click', showMenu);
+
+  // ---- Coding Lab + isolated local runner
+  var codeBusy = false, codeRunFrame = null, codeRunToken = '', codeRunTimeout = null;
+  var PYODIDE_URL = 'https://cdn.jsdelivr.net/pyodide/v314.0.7/full/pyodide.js';
+  var CODE_EXT = { 'Python':'py', 'JavaScript':'js', 'HTML/CSS':'html', 'Java':'java', 'Kotlin':'kt', 'PHP':'php', 'C++':'cpp', 'C#':'cs', 'SQL':'sql', 'Bash':'sh', 'Go':'go', 'Rust':'rs', 'TypeScript':'ts' };
+  function codingOutput(t) { $('#code-out').textContent = String(t == null ? '' : t); }
+  function destroyCodeRunner() { if (codeRunTimeout) clearTimeout(codeRunTimeout); codeRunTimeout = null; if (codeRunFrame) { codeRunFrame.remove(); codeRunFrame = null; } codeRunToken = ''; }
+  function safeB64(text) { return btoa(unescape(encodeURIComponent(text))); }
+  function openCodingLab() { showPanel(false); $('#codedlg').showModal(); }
+  $('#bot-code').addEventListener('click', openCodingLab);
+  $('#code-close').addEventListener('click', function () { destroyCodeRunner(); $('#codedlg').close(); });
+  $('#codedlg').addEventListener('close', destroyCodeRunner);
+  $('#code-language').addEventListener('change', function () {
+    $('#code-preview').classList.add('hide');
+    var lang = $('#code-language').value;
+    if (lang === 'Python') $('#code-editor').value = 'print("Halo dari FRANZZ Coding Lab!")\n';
+    else if (lang === 'JavaScript') $('#code-editor').value = 'console.log("Halo dari FRANZZ Coding Lab!");\n';
+    else if (lang === 'HTML/CSS') $('#code-editor').value = '<!doctype html>\n<html lang="id">\n<head><meta charset="utf-8"><title>Preview</title></head>\n<body><h1>Halo FRANZZ!</h1><p>Ubah kode ini untuk mencoba preview.</p></body>\n</html>\n';
+    else $('#code-editor').value = '';
+    codeWorkspace['/workspace/' + activeCodeFile()] = $('#code-editor').value;
+  });
+  $('#code-action').addEventListener('change', function () {
+    var a = $('#code-action').value;
+    $('#code-task').placeholder = a === 'generate' ? 'Jelaskan program yang ingin dibuat…' : a === 'debug' ? 'Jelaskan error yang muncul dan cara mereproduksinya…' : a === 'explain' ? 'Bagian mana yang ingin dipahami? (opsional)' : 'Perbaikan apa yang diinginkan? (opsional)';
+  });
+  $('#code-ai').addEventListener('click', async function () {
+    if (codeBusy) return;
+    var action = $('#code-action').value, language = $('#code-language').value, task = $('#code-task').value.trim(), source = $('#code-editor').value;
+    if (!task && !source.trim()) { codingOutput('Isi deskripsi tugas atau kode terlebih dahulu.'); return; }
+    codeBusy = true; $('#code-ai').disabled = true; codingOutput('FRANZZ AI sedang mengerjakan kode…'); $('#code-explanation').textContent = '';
+    try {
+      var j = await call('/api/code', { action: action, language: language, task: task, code: source });
+      if (typeof j.code === 'string' && j.code) $('#code-editor').value = j.code;
+      $('#code-explanation').textContent = [j.explanation || '', j.warnings && j.warnings !== 'Tidak ada' ? 'Peringatan: ' + j.warnings : ''].filter(Boolean).join('\n\n');
+      codingOutput('AI selesai. Kode belum dianggap teruji sampai kamu menjalankannya.');
+    } catch (e) { codingOutput(e instanceof TypeError ? 'Tidak bisa menghubungi server.' : e.message); }
+    finally { codeBusy = false; $('#code-ai').disabled = false; }
+  });
+  $('#code-run').addEventListener('click', function () {
+    destroyCodeRunner();
+    var lang = $('#code-language').value, code = $('#code-editor').value;
+    if (!code.trim()) { codingOutput('Editor kode masih kosong.'); return; }
+    if (lang === 'HTML/CSS') {
+      $('#code-preview').classList.remove('hide');
+      $('#code-preview').srcdoc = code;
+      codingOutput('Preview HTML dimuat di iframe sandbox. Script di preview tidak dapat mengakses origin aplikasi.');
+      return;
+    }
+    $('#code-preview').classList.add('hide');
+    if (lang !== 'Python' && lang !== 'JavaScript') {
+      codingOutput('Runner lokal belum mendukung eksekusi ' + lang + '. Kode dapat dibuat, dijelaskan, diperbaiki, dan disimpan; gunakan runtime bahasa yang sesuai untuk menjalankannya.'); return;
+    }
+    codeRunToken = Math.random().toString(36).slice(2) + Date.now().toString(36);
+    var token = codeRunToken, b64 = safeB64(code);
+    var py = lang === 'Python';
+    var srcdoc = '<!doctype html><html><head><meta charset="utf-8"></head><body><script>' +
+      'const RUN_TOKEN=' + JSON.stringify(token) + ';const CODE_B64=' + JSON.stringify(b64) + ';' +
+      'function decodeCode(){return decodeURIComponent(escape(atob(CODE_B64)));}' +
+      'function report(output,kind){parent.postMessage({type:"franzz-code-result",token:RUN_TOKEN,output:String(output||""),kind:kind||"done"},"*");}' +
+      'window.onerror=function(m,s,l,c,e){report((e&&e.stack)||String(m)+" ("+l+":"+c+")","error");};' +
+      (py ?
+        'report("Mengunduh runtime Python (Pyodide) untuk pertama kali…","loading");' +
+        'const script=document.createElement("script");script.src=' + JSON.stringify(PYODIDE_URL) + ';script.onload=async function(){try{const p=await loadPyodide();let out="",err="";p.setStdout({batched:function(m){out+=m+"\\n";}});p.setStderr({batched:function(m){err+=m+"\\n";}});report("Runtime Python siap; menjalankan kode…","running");const r=await p.runPythonAsync(decodeCode());if(r!==undefined&&r!==null&&String(r)!=="None")out+=String(r)+"\\n";report((out+err).trim()||"Program selesai tanpa output.",err?"error":"done");}catch(e){report(e&&e.stack||e,"error");}};script.onerror=function(){report("Gagal memuat Pyodide dari CDN. Periksa koneksi internet lalu coba ulangi.","error");};document.head.appendChild(script);'
+        :
+        'try{window.__franzzOut=[];window.__franzzError="";window.__franzzConsole={log:function(){window.__franzzOut.push(Array.from(arguments).map(String).join(" "));},info:function(){window.__franzzOut.push(Array.from(arguments).map(String).join(" "));},warn:function(){window.__franzzOut.push("WARN: "+Array.from(arguments).map(String).join(" "));},error:function(){window.__franzzOut.push("ERROR: "+Array.from(arguments).map(String).join(" "));}};window.__franzzFinish=function(){const out=(window.__franzzOut||[]).join("\n");report((out+(window.__franzzError?((out?"\n":"")+window.__franzzError):"")).trim()||"JavaScript selesai tanpa output.",window.__franzzError?"error":"done");};const userScript=document.createElement("script");userScript.textContent="(async function(){try{const console=window.__franzzConsole;\n"+decodeCode()+"\n}catch(e){window.__franzzError=String(e&&e.stack||e);}})().then(window.__franzzFinish).catch(function(e){window.__franzzError=String(e&&e.stack||e);window.__franzzFinish();});";document.body.appendChild(userScript);}catch(e){report(e&&e.stack||e,"error");}'
+      ) + '</scr' + 'ipt></body></html>';
+    var frame = document.createElement('iframe'); frame.setAttribute('sandbox','allow-scripts'); frame.setAttribute('aria-hidden','true');
+    frame.style.cssText = 'position:fixed;left:-10000px;top:0;width:1px;height:1px;border:0;'; frame.srcdoc = srcdoc; codeRunFrame = frame;
+    document.body.appendChild(frame); codingOutput(py ? 'Memulai runtime Python… proses pertama bisa memakan waktu lebih lama.' : 'Menjalankan JavaScript di iframe sandbox…');
+    codeRunTimeout = setTimeout(function () { if (codeRunFrame === frame) { destroyCodeRunner(); codingOutput('Proses dihentikan karena melewati batas waktu 35 detik. Kurangi beban kode lalu coba lagi.'); } }, 35000);
+  });
+  window.addEventListener('message', function (e) {
+    if (!codeRunFrame || e.source !== codeRunFrame.contentWindow || !e.data || e.data.type !== 'franzz-code-result' || e.data.token !== codeRunToken) return;
+    var kind = String(e.data.kind || 'done'), output = String(e.data.output || '').slice(0, 16000);
+    if (kind === 'loading' || kind === 'running') { codingOutput(output); return; }
+    if (codeRunTimeout) clearTimeout(codeRunTimeout); codeRunTimeout = null;
+    codingOutput(output);
+    // Leave the frame alive only briefly after completion; removing it stops pending user code.
+    setTimeout(function () { if (codeRunFrame && e.source === codeRunFrame.contentWindow) destroyCodeRunner(); }, 250);
+  });
+  $('#code-save').addEventListener('click', function () {
+    var language = $('#code-language').value, ext = CODE_EXT[language] || 'txt', base = ({'Python':'main.py','JavaScript':'main.js','HTML/CSS':'index.html','Java':'Main.java','Kotlin':'Main.kt','PHP':'index.php','C++':'main.cpp','C#':'Program.cs','SQL':'query.sql','Bash':'script.sh','Go':'main.go','Rust':'main.rs','TypeScript':'main.ts'})[language] || 'main.'+ext;
+    var blob = new Blob([$('#code-editor').value], {type:'text/plain;charset=utf-8'}), url = URL.createObjectURL(blob), a = document.createElement('a');
+    a.href = url; a.download = base; a.click(); setTimeout(function(){URL.revokeObjectURL(url);},1000);
+  });
+  $('#code-copy').addEventListener('click', async function () {
+    try { await navigator.clipboard.writeText($('#code-editor').value); codingOutput('Kode disalin ke clipboard.'); }
+    catch (_) { $('#code-editor').focus(); $('#code-editor').select(); codingOutput('Browser memblokir clipboard otomatis. Kode sudah dipilih; tekan Ctrl+C atau Salin dari menu perangkat.'); }
+  });
+  var codeWorkspace = Object.create(null), codeWorkspaceDirs = Object.create(null), codeWorkspaceCwd = '/workspace';
+  codeWorkspaceDirs['/workspace'] = true;
+  codeWorkspace['/workspace/main.py'] = $('#code-editor').value || 'print("Halo dari FRANZZ Coding Lab!")\n';
+  function activeCodeFile() {
+    var lang = $('#code-language').value;
+    return ({'Python':'main.py','JavaScript':'main.js','HTML/CSS':'index.html','Java':'Main.java','Kotlin':'Main.kt','PHP':'index.php','C++':'main.cpp','C#':'Program.cs','SQL':'query.sql','Bash':'script.sh','Go':'main.go','Rust':'main.rs','TypeScript':'main.ts'})[lang] || 'main.txt';
+  }
+  function shellTokens(raw) {
+    var out = [], re = /"((?:\\.|[^"])*)"|'((?:\\.|[^'])*)'|(\S+)/g, m;
+    while ((m = re.exec(raw))) out.push((m[1] != null ? m[1] : m[2] != null ? m[2] : m[3]).replace(/\\([\\"'])/g, '$1'));
+    return out;
+  }
+  function shellPath(name) {
+    var v = String(name || '.').trim(), absolute = v === '/workspace' || v.startsWith('/workspace/');
+    if (absolute) { if (v === '/workspace') return '/workspace'; v = v.slice(11); }
+    else if (v.startsWith('/')) throw new Error('Akses di luar /workspace ditolak.');
+    var base = absolute || codeWorkspaceCwd === '/workspace' ? '' : codeWorkspaceCwd.slice(11) + '/';
+    var bits = (base + v).split('/'), stack = [];
+    bits.forEach(function (bit) { if (!bit || bit === '.') return; if (bit === '..') { if (!stack.length) throw new Error('Akses di luar /workspace ditolak.'); stack.pop(); } else { if (!/^[^\x00-\x1f]+$/.test(bit)) throw new Error('Nama path tidak valid.'); stack.push(bit); } });
+    return '/workspace' + (stack.length ? '/' + stack.join('/') : '');
+  }
+  function ensureWorkspaceDirectory(path) {
+    path = shellPath(path);
+    var current = '/workspace';
+    path.slice('/workspace'.length).split('/').filter(Boolean).forEach(function(part){current += '/' + part; codeWorkspaceDirs[current] = true;});
+    codeWorkspaceDirs['/workspace'] = true;
+  }
+  function shellCommand(raw) {
+    var parts = shellTokens(raw.trim()); if (!parts.length) return '';
+    var command = parts[0], args = parts.slice(1), path;
+    if (command === 'help') return 'Perintah tersedia:\nhelp  pwd  ls [-la]  cd DIR  cat FILE  echo TEXT\nmkdir DIR  touch FILE  rm FILE  cp SRC DEST  mv SRC DEST\nhead [-n N] FILE  tail [-n N] FILE  grep TEXT FILE  wc FILE  find [DIR]\nclear  date  whoami  uname  python --version  python main.py  node --version  run  save\nRunner Python/JavaScript tersedia; shell terbatas hanya pada workspace browser.';
+    if (command === 'pwd') return codeWorkspaceCwd;
+    if (command === 'whoami') return 'franzz-user (browser sandbox)';
+    if (command === 'uname') return 'FRANZZ Web Workspace / browser sandbox';
+    if (command === 'date') return new Date().toString();
+    if (command === 'echo') return args.join(' ');
+    if (command === 'clear') { codingOutput(''); return ''; }
+    if (command === 'python' || command === 'python3') {
+      if (args[0] === '--version' || args[0] === '-V') return 'Python 3.14 (Pyodide; browser sandbox; internet required on first run)';
+      if (args[0] === '-c') { var inline = args.slice(1).join(' '); if (!inline) throw new Error("Gunakan python -c 'print(2 + 2)'."); $('#code-language').value = 'Python'; $('#code-language').dispatchEvent(new Event('change')); $('#code-editor').value = inline; $('#code-run').click(); return 'Menjalankan python -c di sandbox browser…'; }
+      if (args.length && args[0] !== 'main.py' && !Object.prototype.hasOwnProperty.call(codeWorkspace, shellPath(args[0]))) throw new Error('File belum ada di workspace browser: ' + args[0]);
+      if ($('#code-language').value !== 'Python') { $('#code-language').value = 'Python'; $('#code-language').dispatchEvent(new Event('change')); }
+      if (args[0] && Object.prototype.hasOwnProperty.call(codeWorkspace, shellPath(args[0]))) $('#code-editor').value = codeWorkspace[shellPath(args[0])];
+      $('#code-run').click(); return 'Menjalankan Python di sandbox browser…';
+    }
+    if (command === 'node' || command === 'nodejs') {
+      if (args[0] === '--version' || args[0] === '-v') return 'Node.js runtime tidak tersedia di browser. Pilih JavaScript lalu tekan Jalankan lokal.';
+      if ($('#code-language').value !== 'JavaScript') { $('#code-language').value = 'JavaScript'; $('#code-language').dispatchEvent(new Event('change')); }
+      if (args[0] && Object.prototype.hasOwnProperty.call(codeWorkspace, shellPath(args[0]))) $('#code-editor').value = codeWorkspace[shellPath(args[0])];
+      $('#code-run').click(); return 'Menjalankan JavaScript di sandbox browser…';
+    }
+    if (command === 'run') { $('#code-run').click(); return 'Menjalankan kode aktif…'; }
+    if (command === 'save') { $('#code-save').click(); codeWorkspace[ shellPath(args[0] || activeCodeFile()) ] = $('#code-editor').value; return 'File diunduh dan disimpan di workspace sesi browser.'; }
+    if (command === 'ls') { path = shellPath(args.find(function(a){return !a.startsWith('-');}) || '.'); if (codeWorkspaceDirs[path]) { var prefix = path === '/workspace' ? '/workspace/' : path + '/'; var files = Object.keys(codeWorkspace).filter(function(k){return k.startsWith(prefix) && k.slice(prefix.length).indexOf('/') < 0;}).map(function(k){return k.slice(prefix.length);}); var dirs = Object.keys(codeWorkspaceDirs).filter(function(k){return k !== path && k.startsWith(prefix) && k.slice(prefix.length).indexOf('/') < 0;}).map(function(k){return k.slice(prefix.length) + '/';}); return files.concat(dirs).sort().join('\n') || '(direktori kosong)'; } if (Object.prototype.hasOwnProperty.call(codeWorkspace, path)) return path.split('/').pop(); throw new Error('Path tidak ditemukan: ' + path); }
+    if (command === 'cd') { path = shellPath(args[0] || '/workspace'); if (!codeWorkspaceDirs[path]) throw new Error('Direktori tidak ditemukan: ' + path); codeWorkspaceCwd = path; return path; }
+    if (command === 'mkdir') { if (!args.length) throw new Error('Gunakan mkdir nama-folder'); path = shellPath(args[0]); ensureWorkspaceDirectory(path); return 'Folder sesi dibuat: ' + path; }
+    if (command === 'touch') { if (!args.length) throw new Error('Gunakan touch nama-file'); path = shellPath(args[0]); if (codeWorkspaceDirs[path]) throw new Error('Path adalah direktori.'); ensureWorkspaceDirectory(path.slice(0, path.lastIndexOf('/')) || '/workspace'); codeWorkspace[path] = codeWorkspace[path] || ''; return 'File sesi dibuat: ' + path; }
+    if (command === 'cat') { if (!args.length) throw new Error('Gunakan cat nama-file'); path = shellPath(args[0]); if (Object.prototype.hasOwnProperty.call(codeWorkspace, path)) return codeWorkspace[path]; if (args[0] === activeCodeFile() || path === shellPath(activeCodeFile())) return $('#code-editor').value; throw new Error('File belum ada: ' + path); }
+    if (command === 'rm') { if (!args.length) throw new Error('Gunakan rm nama-file'); path = shellPath(args[0]); if (codeWorkspaceDirs[path]) throw new Error('rm hanya menghapus file sesi.'); if (!Object.prototype.hasOwnProperty.call(codeWorkspace,path)) throw new Error('File tidak ditemukan: ' + path); delete codeWorkspace[path]; return 'File sesi dihapus.'; }
+    if (command === 'head' || command === 'tail') { if (!args.length) throw new Error('Gunakan '+command+' [-n JUMLAH] FILE'); var hi = args.indexOf('-n'), count = hi >= 0 ? Number(args[hi+1]) : 10, name = args[args.length-1]; if (hi >= 0 && (!Number.isInteger(count) || count < 1 || count > 500)) throw new Error('Jumlah baris harus 1–500.'); if (hi >= 0 && hi+1 === args.length-1) throw new Error('Nama file belum diisi.'); path = shellPath(name); var contents = Object.prototype.hasOwnProperty.call(codeWorkspace,path) ? codeWorkspace[path] : (name === activeCodeFile() || path === shellPath(activeCodeFile()) ? $('#code-editor').value : null); if (contents == null) throw new Error('File tidak ditemukan: ' + path); var lines = contents.split('\n'); return (command === 'head' ? lines.slice(0,count) : lines.slice(-count)).join('\n'); }
+    if (command === 'grep') { if (args.length < 2) throw new Error('Gunakan grep TEKS FILE'); var needle = args.slice(0,-1).join(' '); path = shellPath(args[args.length-1]); var text = Object.prototype.hasOwnProperty.call(codeWorkspace,path) ? codeWorkspace[path] : (args[args.length-1] === activeCodeFile() || path === shellPath(activeCodeFile()) ? $('#code-editor').value : null); if (text == null) throw new Error('File tidak ditemukan: ' + path); return text.split('\n').filter(function(line){return line.indexOf(needle) >= 0;}).join('\n') || '(tidak ada baris cocok)'; }
+    if (command === 'wc') { if (!args.length) throw new Error('Gunakan wc FILE'); path = shellPath(args[args.length-1]); var text = Object.prototype.hasOwnProperty.call(codeWorkspace,path) ? codeWorkspace[path] : (args[args.length-1] === activeCodeFile() || path === shellPath(activeCodeFile()) ? $('#code-editor').value : null); if (text == null) throw new Error('File tidak ditemukan: ' + path); return (text ? text.split('\n').length : 0) + ' ' + (text.trim() ? text.trim().split(/\s+/).length : 0) + ' ' + text.length + ' ' + path.split('/').pop(); }
+    if (command === 'cp' || command === 'mv') { if (args.length !== 2) throw new Error('Gunakan '+command+' SUMBER TUJUAN'); var from = shellPath(args[0]), to = shellPath(args[1]); if (!Object.prototype.hasOwnProperty.call(codeWorkspace,from)) throw new Error('File sumber tidak ditemukan: ' + from); if (codeWorkspaceDirs[to]) to += '/' + from.split('/').pop(); ensureWorkspaceDirectory(to.slice(0,to.lastIndexOf('/')) || '/workspace'); if (from === to) throw new Error('Sumber dan tujuan sama.'); codeWorkspace[to] = codeWorkspace[from]; if (command === 'mv') delete codeWorkspace[from]; return (command === 'cp' ? 'File disalin: ' : 'File dipindahkan: ') + to; }
+    if (command === 'find') { path = shellPath(args[0] || '.'); if (!codeWorkspaceDirs[path]) throw new Error('Direktori tidak ditemukan: ' + path); var prefix = path === '/workspace' ? '/workspace/' : path + '/'; var matches = Object.keys(codeWorkspace).concat(Object.keys(codeWorkspaceDirs).filter(function(k){return k !== '/workspace';})).filter(function(k){return k.startsWith(prefix);}).slice(0,500).map(function(k){return k + (codeWorkspaceDirs[k] ? '/' : '');}); return matches.join('\n') || '(tidak ada file)'; }
+    throw new Error('Perintah tidak dikenal: ' + command + '. Ketik help untuk daftar perintah.');
+  }
+  function runBrowserTerminal() {
+    var input = $('#code-command'), raw = input.value.trim(); if (!raw) return; input.value = '';
+    try { var result = shellCommand(raw); if (result) codingOutput('$ ' + raw + '\n' + result); }
+    catch (e) { codingOutput('$ ' + raw + '\nError: ' + (e && e.message || e)); }
+  }
+  $('#code-command-run').addEventListener('click', runBrowserTerminal);
+  $('#code-command').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); runBrowserTerminal(); } });
+  $('#code-editor').addEventListener('input', function () { codeWorkspace['/workspace/' + activeCodeFile()] = $('#code-editor').value; });
+  $('#code-save').addEventListener('click', function () { codeWorkspace['/workspace/' + activeCodeFile()] = $('#code-editor').value; });
+  $('#code-clear').addEventListener('click', function () { codingOutput('Terminal dibersihkan.'); });
+  window.addEventListener('beforeunload', destroyCodeRunner);
 
   // ---- login
   async function doLogin() {

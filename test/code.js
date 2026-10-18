@@ -1,0 +1,13 @@
+'use strict';
+const assert = require('assert');
+const { parseCodeResponse } = require('../lib/api');
+const result = parseCodeResponse('<CODE>\nprint("halo")\n</CODE>\n<EXPLANATION>\nCetak salam.\n</EXPLANATION>\n<WARNINGS>\nTidak ada.\n</WARNINGS>', 'Python');
+assert.strictEqual(result.code, 'print("halo")');
+assert.match(result.explanation, /Cetak salam/);
+assert.match(result.warnings, /Tidak ada/);
+const fenced = parseCodeResponse('Ini contoh:\n```python\nprint(2 + 2)\n```\nHasil belum dijalankan.', 'Python');
+assert.strictEqual(fenced.code, 'print(2 + 2)');
+assert.match(fenced.explanation, /belum dijalankan/);
+const long = 'x'.repeat(21000);
+assert.strictEqual(parseCodeResponse('<CODE>\n'+long+'\n</CODE>', 'Python').code.length, 20000);
+console.log('TES CODING LAB: parser code/explanation/warnings, fenced output, dan batas ukuran lulus');
