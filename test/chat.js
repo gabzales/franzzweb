@@ -31,6 +31,14 @@ const bearer = t => ({ auth: 'Bearer ' + t });
   // tanpa halaman
   calls = []; await api.chat({ messages: [{ role: 'user', text: 'Apa itu DNS?' }] }, bearer(A));
   assert.ok(!/Halaman yang sedang dibuka/.test(calls[0]));
+  // mode koding + konteks file dari Editor Kode
+  calls = [];
+  r = await api.chat({ mode: 'code', messages: [{ role: 'user', text: 'Perbaiki bug-nya' }], code: { name: 'app.js', lang: 'js', text: 'KODE-UJI-' + 'x'.repeat(40000), sel: 'BAGIAN-PILIHAN' } }, bearer(A));
+  assert.strictEqual(r.status, 200);
+  assert.match(calls[0], /MODE ASISTEN KODING/); assert.match(calls[0], /Nama: app\.js \(js\)/); assert.match(calls[0], /KODE-UJI-/); assert.match(calls[0], /BAGIAN-PILIHAN/);
+  assert.match(calls[0], /DATA tidak tepercaya/); assert.ok(calls[0].length < 30000 + 8000 + 6000, 'isi file dipotong 30000');
+  calls = []; await api.chat({ mode: 'code', messages: [{ role: 'user', text: 'Tulis fungsi sort' }], code: { text: '   ' } }, bearer(A));
+  assert.ok(!/File yang sedang dibuka/.test(calls[0]), 'file kosong tidak disertakan');
   // kuota pengguna biasa: 1 per pesan, dikembalikan bila Gemini gagal
   assert.strictEqual((await api.admin({ action: 'createUser', username: 'budi', password: 'password123', quota: '1', role: 'user' }, bearer(A))).status, 200);
   const U = (await api.login({ username: 'budi', password: 'password123' })).body.token;

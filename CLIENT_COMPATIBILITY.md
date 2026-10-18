@@ -1,6 +1,6 @@
 # Audit kompatibilitas Web ↔ Android
 
-Tanggal audit: 18 Oktober 2026.
+Tanggal audit: 11 Oktober 2026.
 
 ## Kontrak yang digunakan kedua klien
 
@@ -30,14 +30,3 @@ Tanggal audit: 18 Oktober 2026.
 Tes otomatis backend/web berjalan lokal dan lulus. Koneksi Firestore/Vercel production dan build APK perlu diuji di deployment/CI dengan kredensial serta Android SDK sebenarnya; tidak disamakan dengan tes mock atau pemeriksaan statis.
 
 - Kolom Google Forms tipe paragraf dikenali sebagai `essay`; input multiline Android/browser juga memakai tipe yang sama. Jawaban esai dapat berisi hingga 3.000 karakter, sementara jawaban singkat tetap dibatasi 500 karakter.
-
-
-### Coding Lab (added)
-- Web and Android call `POST /api/code` with `{action, language, task, code}` and expect `{action, language, code, explanation, warnings}`.
-- Web local execution: Python (Pyodide CDN; first run requires internet), JavaScript, and HTML/CSS preview in sandboxed iframe. A limited in-memory workspace shell is available for basic file and navigation commands; this is not a Linux/Termux shell and cannot access server files.
-- Android local execution: Python 3.13 via Chaquopy and a limited workspace shell; code is not executed in the web server.
-
-
-### Terminal commands
-
-The browser workspace supports `help`, `pwd`, `ls`, `cd`, `cat`, `mkdir`, `touch`, `rm`, `cp`, `mv`, `grep`, `head`, `tail`, `wc`, `find`, `echo`, `date`, `whoami`, `uname`, `python --version`, `python main.py`, `node --version`, `run`, and `save`. File operations are held in session memory and are not files on the deployment server. Python and JavaScript run only in sandboxed browser iframes; a full Termux/Linux shell and arbitrary package installation are not provided by the web client.

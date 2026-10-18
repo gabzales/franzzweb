@@ -1,6 +1,6 @@
 'use strict';
 // Satu function untuk semua /api/<nama>: instance tetap hangat, jumlah function minimal (irit kuota Vercel gratis).
-const ROUTES = { status: 'GET', me: 'GET', login: 'POST', page: 'POST', fill: 'POST', analyze: 'POST', chat: 'POST', image: 'POST', code: 'POST', study: 'POST', gemini: 'POST', admin: 'POST' };
+const ROUTES = { status: 'GET', me: 'GET', login: 'POST', page: 'POST', fill: 'POST', analyze: 'POST', chat: 'POST', image: 'POST', study: 'POST', gemini: 'POST', admin: 'POST' };
 
 module.exports = async (req, res) => {
   res.setHeader('Cache-Control', 'no-store');

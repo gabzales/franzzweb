@@ -112,6 +112,47 @@
     return null;
   }
 
+  function base64Utf8(text) {
+    var bytes = new TextEncoder().encode(String(text)), binary = '';
+    for (var i = 0; i < bytes.length; i += 8192) binary += String.fromCharCode.apply(null, bytes.subarray(i, Math.min(i + 8192, bytes.length)));
+    return btoa(binary);
+  }
+  function buildWorkerSource(language, source, token) {
+    source = String(source || '');
+    if (language === 'python') {
+      var b64 = base64Utf8(source);
+      return [
+        'const __token=' + JSON.stringify(token) + ';',
+        'const __base="https://cdn.jsdelivr.net/pyodide/v314.0.7/full/";',
+        'function __send(output,kind){ self.postMessage({token:__token,output:String(output||""),kind:kind||"done"}); }',
+        '__send("Memuat runtime Python pertama kali…","progress");',
+        'try { importScripts(__base+"pyodide.js"); } catch(e) { __send("Gagal memuat runtime Python: "+String(e&&e.message||e),"error"); }',
+        '(async function(){ try {',
+        ' if (typeof loadPyodide !== "function") throw new Error("Runtime Python tidak berhasil dimuat. Periksa koneksi/CDN.");',
+        ' const py=await loadPyodide({indexURL:__base}); let __out="",__err="";',
+        ' py.setStdout({batched:function(s){__out+=s+"\\n";}}); py.setStderr({batched:function(s){__err+=s+"\\n";}});',
+        ' __send("Runtime Python siap; menjalankan kode…","progress");',
+        ' const __code= new TextDecoder().decode(Uint8Array.from(atob(' + JSON.stringify(b64) + '),function(c){return c.charCodeAt(0);}));',
+        ' const __result=await py.runPythonAsync(__code);',
+        ' if (__result!==null && __result!==undefined && String(__result)!=="None") __out+=String(__result)+"\\n";',
+        ' if (__result && typeof __result.destroy==="function") { try{__result.destroy();}catch(_){} }',
+        ' const __output=(__out+(__err?((__out?"\\n":"")+"stderr:\\n"+__err):"")).trim();',
+        ' __send(__output||"Program selesai tanpa output.",__err?"error":"done");',
+        ' } catch(e) { __send(String(e&&e.stack||e),"error"); } })();'
+      ].join('\n');
+    }
+    return [
+      'const __token=' + JSON.stringify(token) + ';',
+      'const __out=[]; let __hasError=false;',
+      'function __fmt(v){if(typeof v==="string")return v;try{const x=JSON.stringify(v);return x===undefined?String(v):x;}catch(_){return String(v);}}',
+      'function __line(k,args){const t=Array.prototype.map.call(args,__fmt).join(" ");__out.push((k==="log"||k==="info")?t:(k.toUpperCase()+": "+t));if(k==="error")__hasError=true;}',
+      'self.console={log:function(){__line("log",arguments);},info:function(){__line("info",arguments);},warn:function(){__line("warn",arguments);},error:function(){__line("error",arguments);},debug:function(){__line("log",arguments);}};',
+      'function __send(out,kind){self.postMessage({token:__token,output:String(out||""),kind:kind||"done"});}',
+      'self.onerror=function(m,s,l,c,e){__send((e&&e.stack)||String(m)+" ("+l+":"+c+")","error");};',
+      '(async function(){try{await (async function(){\n' + source + '\n}).call(self);__send(__out.join("\\n")||"Program selesai tanpa output.",__hasError?"error":"done");}catch(e){__send(String(e&&e.stack||e),"error");}})();'
+    ].join('\n');
+  }
+
   var SAMPLE = '<!doctype html>\n<html lang="id">\n<head>\n  <meta charset="utf-8">\n  <meta name="viewport" content="width=device-width, initial-scale=1">\n  <title>Halo Orbit</title>\n  <style>\n    body { font-family: system-ui, sans-serif; padding: 24px; }\n    button { padding: 10px 16px; border-radius: 10px; border: 0; background: #7B3FE4; color: #fff; }\n  </style>\n</head>\n<body>\n  <h1>Halo dari Editor Kode</h1>\n  <button id="btn">Klik saya</button>\n  <script>\n    var n = 0;\n    document.getElementById("btn").addEventListener("click", function () {\n      n++;\n      console.log("Diklik " + n + " kali");\n    });\n  </script>\n</body>\n</html>\n';
 
   // ------------------------------------------------------------------ antarmuka (hanya di browser)
@@ -120,6 +161,7 @@
     var el = h.el;
     var dlg = $('#codedlg'), ta = $('#ce-ta'), hlEl = $('#ce-hl'), mk = $('#ce-mk'), gut = $('#ce-gut'), wrap = $('#ce-wrap');
     var IND = '  ', FILES = [], ACT = 0, loaded = false, saveT = 0, rafT = 0, guard = false, lastLines = 0, lastLang = null;
+    var terminal = null, termHistory = [], termHistoryPos = 0, activeWorkers = []; // runner kode selalu di worker terpisah
     var OPEN = { '(': ')', '[': ']', '{': '}', '"': '"', "'": "'", '`': '`' }, CLOSE = ')]}"\'`';
 
     // ---- penyimpanan lokal (hanya di browser ini)
@@ -160,7 +202,7 @@
       hlEl.scrollTop = ta.scrollTop; hlEl.scrollLeft = ta.scrollLeft; mk.scrollTop = ta.scrollTop; mk.scrollLeft = ta.scrollLeft; gut.scrollTop = ta.scrollTop;
     }
     ta.addEventListener('scroll', sync);
-    ta.addEventListener('input', function () { FILES[ACT].text = ta.value; later(); schedule(); if (!$('#ce-find').classList.contains('hide')) findAll(false); });
+    ta.addEventListener('input', function () { FILES[ACT].text = ta.value; if (terminal) terminal.syncEditorFile(FILES[ACT].name, ta.value); later(); schedule(); if (!$('#ce-find').classList.contains('hide')) findAll(false); });
     document.addEventListener('selectionchange', function () { if (document.activeElement === ta) pos(); });
 
     // ---- menyisipkan teks lewat perintah browser supaya undo/redo tetap bekerja
@@ -260,19 +302,19 @@
         n.addEventListener('click', function () {
           if (i !== ACT) { select(i); return; }
           var nm = prompt('Nama file:', f.name); nm = nm && nm.trim().replace(/[\\/:*?"<>|]/g, '').slice(0, 60);
-          if (nm) { f.name = nm; lastLang = null; tabs(); render(); later(); }
+          if (nm) { var oldName = f.name; f.name = nm; if (terminal) { terminal.syncEditorFile(oldName, f.text); terminal.syncEditorFile(f.name, f.text); } lastLang = null; tabs(); render(); later(); }
         });
         x.addEventListener('click', function () { closeFile(i); });
         t.appendChild(n); t.appendChild(x); box.appendChild(t);
       });
       var on = box.querySelector('.on'); if (on && on.scrollIntoView) on.scrollIntoView({ block: 'nearest', inline: 'nearest' });
     }
-    function select(i) { FILES[ACT].text = ta.value; ACT = Math.max(0, Math.min(FILES.length - 1, i)); ta.value = FILES[ACT].text; ta.scrollTop = 0; ta.scrollLeft = 0; tabs(); lastLines = 0; render(); persist(); }
+    function select(i) { FILES[ACT].text = ta.value; if (terminal) terminal.syncEditorFile(FILES[ACT].name, ta.value); ACT = Math.max(0, Math.min(FILES.length - 1, i)); ta.value = FILES[ACT].text; if (terminal) terminal.syncEditorFile(FILES[ACT].name, ta.value); ta.scrollTop = 0; ta.scrollLeft = 0; tabs(); lastLines = 0; render(); persist(); }
     function newFile(name, text) {
       if (FILES.length >= 30) { stat('Maksimal 30 file'); return; }
       FILES[ACT].text = ta.value;
       FILES.push({ name: name || 'baru-' + (FILES.length + 1) + '.js', text: text || '' }); ACT = FILES.length - 1;
-      ta.value = FILES[ACT].text; tabs(); lastLines = 0; render(); persist(); ta.focus();
+      ta.value = FILES[ACT].text; if (terminal) terminal.syncEditorFile(FILES[ACT].name, ta.value); tabs(); lastLines = 0; render(); persist(); ta.focus();
     }
     function closeFile(i) {
       var f = FILES[i]; if (i === ACT) f.text = ta.value;
@@ -280,7 +322,7 @@
       FILES.splice(i, 1);
       if (!FILES.length) FILES.push({ name: 'baru.txt', text: '' });
       if (ACT >= FILES.length) ACT = FILES.length - 1; else if (i < ACT) ACT--;
-      ta.value = FILES[ACT].text; tabs(); lastLines = 0; render(); persist();
+      ta.value = FILES[ACT].text; if (terminal) terminal.syncEditorFile(FILES[ACT].name, ta.value); tabs(); lastLines = 0; render(); persist();
     }
     function download() {
       var f = FILES[ACT]; f.text = ta.value;
@@ -364,6 +406,7 @@
       var f = FILES[ACT]; f.text = ta.value;
       var doc = buildPreview(f, FILES);
       if (doc === null) { stat('Jalankan hanya untuk file HTML dan JavaScript'); return; }
+      $('#ce-term-box').classList.add('hide'); $('#ce-term-btn').classList.remove('on'); $('#ce-term-btn').setAttribute('aria-pressed', 'false');
       conBox.textContent = ''; $('#ce-prevbox').classList.remove('hide'); pf.srcdoc = doc; stat('Dijalankan: ' + f.name);
     }
     window.addEventListener('message', function (e) {
@@ -372,6 +415,108 @@
       line.className = 'ce-cl ' + (['warn', 'error'].indexOf(d.t) >= 0 ? d.t : 'log'); line.textContent = String(d.m == null ? '' : d.m).slice(0, 2000);
       conBox.appendChild(line); while (conBox.childNodes.length > 200) conBox.removeChild(conBox.firstChild); conBox.scrollTop = conBox.scrollHeight;
     });
+
+    // ---- terminal browser yang tetap memakai editor/tema lama
+    var termOut = $('#ce-term-out'), termCmd = $('#ce-term-cmd'), termState = $('#ce-term-state');
+    function termStatus(text) { if (termState) termState.textContent = String(text || 'Siap').slice(0, 90); }
+    function termAppend(text) {
+      if (!text) return;
+      var current = termOut.textContent || '';
+      termOut.textContent = (current + (current && !current.endsWith('\n') ? '\n' : '') + String(text)).slice(-30000);
+      termOut.scrollTop = termOut.scrollHeight;
+    }
+    function runInWorker(language, source) {
+      source = String(source || '');
+      if (source.length > 60000) return Promise.resolve('Kode terlalu panjang untuk runner browser (maksimum 60.000 karakter).');
+      return new Promise(function (resolve) {
+        var worker = null, url = '', done = false, timer = null, token = Date.now().toString(36) + Math.random().toString(36).slice(2);
+        function finish(output) {
+          if (done) return; done = true; if (timer) clearTimeout(timer);
+          if (worker) { try { worker.terminate(); } catch (_) {} }
+          if (url) { try { URL.revokeObjectURL(url); } catch (_) {} }
+          activeWorkers = activeWorkers.filter(function (x) { return x.worker !== worker; });
+          termStatus('Siap'); resolve(String(output || 'Program selesai tanpa output.').slice(0, 16000));
+        }
+        var workerSource = buildWorkerSource(language, source, token);
+        try {
+          var blob = new Blob([workerSource], { type: 'text/javascript' }); url = URL.createObjectURL(blob); worker = new Worker(url);
+          activeWorkers.push({ worker: worker, stop: function () { finish('Eksekusi dihentikan.'); } });
+          worker.onmessage = function (e) {
+            var d = e.data || {}; if (d.token !== token) return;
+            if (d.kind === 'progress') { termStatus(d.output || 'Menjalankan…'); return; }
+            finish(d.output || (d.kind === 'error' ? 'Eksekusi gagal.' : 'Program selesai tanpa output.'));
+          };
+          worker.onerror = function (e) { finish('Runner gagal: ' + String(e && e.message || 'Worker tidak bisa dijalankan. Periksa pengaturan CSP browser.')); };
+          timer = setTimeout(function () { finish('Batas waktu eksekusi terlewati (60 detik). Worker dihentikan.'); }, 60000);
+          termStatus(language === 'python' ? 'Menyiapkan Python…' : 'Menjalankan JavaScript…');
+        } catch (e) { finish('Runner tidak bisa dimulai: ' + String(e && e.message || e)); }
+      });
+    }
+    function downloadTermFile(name, text) {
+      return new Promise(function (resolve) {
+        var url = URL.createObjectURL(new Blob([String(text)], { type: 'text/plain;charset=utf-8' })), a = document.createElement('a');
+        a.href = url; a.download = String(name || 'file.txt').split('/').pop().slice(0, 120) || 'file.txt'; document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(function () { URL.revokeObjectURL(url); resolve(); }, 250);
+      });
+    }
+    function openTermFile(name, text) {
+      if (!name || /[\\/]/.test(name)) throw new Error('Editor hanya membuka nama file di folder /workspace.');
+      var idx = FILES.findIndex(function (f) { return f.name === name; });
+      if (idx >= 0) {
+        FILES[idx].text = String(text == null ? '' : text);
+        if (idx !== ACT) select(idx); else { ta.value = FILES[ACT].text; lastLines = 0; render(); persist(); }
+      } else {
+        var before = FILES.length; newFile(name, text);
+        if (FILES.length === before) throw new Error('Batas maksimum 30 file di editor tercapai.');
+      }
+      if (terminal) terminal.syncEditorFile(FILES[ACT].name, ta.value);
+      return true;
+    }
+    function initTerminal() {
+      if (terminal) { terminal.syncEditorFile(FILES[ACT].name, ta.value); return; }
+      if (!window.OrbitShell) throw new Error('Modul terminal belum dimuat. Muat ulang halaman.');
+      terminal = window.OrbitShell.create({
+        getActiveFile: function () { FILES[ACT].text = ta.value; return { name: FILES[ACT].name, text: ta.value }; },
+        openFile: openTermFile,
+        downloadFile: downloadTermFile,
+        runPython: function (code) { return runInWorker('python', code); },
+        runJavaScript: function (code) { return runInWorker('javascript', code); },
+        runPreview: function () { runPreview(); return Promise.resolve('Preview dibuka di panel hasil.'); }
+      });
+      terminal.syncEditorFiles(FILES, ACT, ta.value);
+    }
+    function showTerminal(show) {
+      try { initTerminal(); } catch (e) { stat(e.message); return; }
+      var box = $('#ce-term-box'), on = typeof show === 'boolean' ? show : box.classList.contains('hide');
+      if (on) { $('#ce-prevbox').classList.add('hide'); $('#ce-term-box').classList.remove('hide'); }
+      else { $('#ce-term-box').classList.add('hide'); }
+      $('#ce-term-btn').classList.toggle('on', on); $('#ce-term-btn').setAttribute('aria-pressed', on ? 'true' : 'false');
+      $('#ce-term-cwd').textContent = terminal.getCwd();
+      if (on) { termCmd.focus({ preventScroll: true }); termOut.scrollTop = termOut.scrollHeight; }
+    }
+    async function runTerminalCommand() {
+      var raw = termCmd.value.trim(); if (!raw) return;
+      termCmd.value = ''; termHistory.push(raw); if (termHistory.length > 100) termHistory.shift(); termHistoryPos = termHistory.length;
+      termAppend('$ ' + raw); termStatus('Menjalankan…');
+      try {
+        var result = await terminal.execute(raw);
+        if (result && result.clear) termOut.textContent = '';
+        else if (result && result.output) termAppend(result.output);
+        $('#ce-term-cwd').textContent = terminal.getCwd();
+        termStatus(result && result.error ? 'Selesai dengan error' : 'Siap');
+      } catch (e) { termAppend('Error: ' + String(e && e.message || e)); termStatus('Selesai dengan error'); }
+      termOut.scrollTop = termOut.scrollHeight;
+    }
+    $('#ce-term-btn').addEventListener('click', function () { showTerminal(); });
+    $('#ce-term-close').addEventListener('click', function () { showTerminal(false); });
+    $('#ce-term-clear').addEventListener('click', function () { termOut.textContent = ''; termStatus('Siap'); });
+    $('#ce-term-run').addEventListener('click', runTerminalCommand);
+    termCmd.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); runTerminalCommand(); }
+      else if (e.key === 'ArrowUp' && !termCmd.value) { e.preventDefault(); if (termHistoryPos > 0) termHistoryPos--; termCmd.value = termHistory[termHistoryPos] || ''; }
+      else if (e.key === 'ArrowDown' && !termCmd.value) { e.preventDefault(); termHistoryPos = Math.min(termHistory.length, termHistoryPos + 1); termCmd.value = termHistory[termHistoryPos] || ''; }
+    });
+    function stopWorkers() { activeWorkers.slice().forEach(function (x) { try { x.stop(); } catch (_) {} }); activeWorkers = []; }
 
     // ---- baris tombol bantu (ponsel)
     (function keys() {
@@ -491,8 +636,8 @@
     if (window.visualViewport) { window.visualViewport.addEventListener('resize', fit); window.visualViewport.addEventListener('scroll', fit); }
     // Esc / tombol Back: tutup bilah cari dulu, baru editornya
     dlg.addEventListener('cancel', function (e) { if (!$('#ce-find').classList.contains('hide')) { e.preventDefault(); showFind(false); } });
-    dlg.addEventListener('close', function () { FILES[ACT].text = ta.value; persist(); dlg.style.height = ''; dlg.style.top = ''; });
-    window.addEventListener('pagehide', function () { if (loaded) { FILES[ACT].text = ta.value; persist(); } });
+    dlg.addEventListener('close', function () { FILES[ACT].text = ta.value; if (terminal) terminal.syncEditorFile(FILES[ACT].name, ta.value); stopWorkers(); persist(); dlg.style.height = ''; dlg.style.top = ''; });
+    window.addEventListener('pagehide', function () { stopWorkers(); if (loaded) { FILES[ACT].text = ta.value; if (terminal) terminal.syncEditorFile(FILES[ACT].name, ta.value); persist(); } });
 
     function open(withAI) {
       if (!loaded) { load(); loaded = true; ta.value = FILES[ACT].text; tabs(); lastLines = 0; }
@@ -503,7 +648,7 @@
     return { open: open };
   }
 
-  var api = { init: init, highlight: highlight, langOf: langOf, buildPreview: buildPreview, inlineAssets: inlineAssets };
+  var api = { init: init, highlight: highlight, langOf: langOf, buildPreview: buildPreview, inlineAssets: inlineAssets, buildWorkerSource: buildWorkerSource };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.OrbitEditor = api;
 })(typeof window !== 'undefined' ? window : this);

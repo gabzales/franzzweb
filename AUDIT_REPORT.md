@@ -10,19 +10,16 @@ Tanggal pemeriksaan: 18 Oktober 2026.
 4. **Kontrak klien Web/Android diperiksa.** Route dan payload yang digunakan klien dicakup oleh tes kontrak. Source Android disediakan pada ZIP terpisah dan menggunakan endpoint server yang sama.
 5. **ENV template aman.** `ENV.example` memakai placeholder, tidak berisi service-account key atau API key asli.
 
+6. **Editor Kode tidak didesain ulang.** Perubahan memakai source editor `public/editor.js` + `public/editor.css` yang diberikan pengguna. Yang ditambahkan hanya tombol dan panel Terminal dengan palet warna yang sama.
+7. **Terminal browser dibatasi.** `public/shell.js` menyediakan perintah filesystem hanya di `/workspace`, memblokir traversal ke luar, dan tidak pernah meneruskan command shell ke server. Python memakai Pyodide `v314.0.7` di Web Worker; JavaScript memakai Worker sandbox; HTML preview tetap menggunakan iframe sandbox. CSP memberi izin hanya untuk CDN Pyodide yang dipatok dan `blob:` Worker.
+
 ## Tes otomatis
 
-`npm test` lulus untuk routing, validasi input, kecepatan, chat, pembatasan kuota, halaman, tes Firebase dengan fake Firestore, alat belajar, kontrak klien, dan migrasi model.
+`npm test` lulus untuk routing, validasi input, kecepatan, chat, pembatasan kuota, halaman, tes Firebase dengan fake Firestore, alat belajar, kontrak klien, migrasi model, editor source asli, sintaks worker, perintah terminal, serta blokir path traversal.
 
 ## Yang belum bisa dipastikan dari audit statis
 
 - Endpoint live `https://www.franzzorbit.my.id/api/status` dan halaman produksi tidak berhasil dibuka oleh alat inspeksi sesi ini, jadi status deployment live tidak diklaim terverifikasi.
 - Tes Firestore menggunakan fake/mock Firestore, bukan service account produksi. Setelah deploy, lakukan uji login admin, buat akun uji, logout/login akun tersebut, dan uji perubahan kuota untuk memastikan izin baca/tulis IAM benar.
+- Ketersediaan CDN Pyodide dan eksekusi real-browser perlu dipastikan setelah deployment; tes lokal memvalidasi sintaks Worker dan kontrak terminal, tetapi sesi inspeksi ini tidak bisa menjalankan Chromium karena navigasi browser diblokir oleh kebijakan environment.
 - Build Android penuh wajib dijalankan di GitHub Actions atau Android Studio dengan SDK sungguhan; ZIP Android memiliki workflow yang menyelaraskan versi Gradle dan compiler, tetapi source belum diklaim menghasilkan APK sampai workflow sukses.
-
-
-## Coding Lab added
-- Added authenticated `POST /api/code` with request-size bounds, action validation, user quota, model fallback, and text-only output parsing. Submitted code is not executed on the server.
-- Added a Coding Lab tool to the robot popup: generate/debug/explain/improve, code editor, save/download, a limited in-memory browser terminal, and sandboxed local runner.
-- Browser Python uses pinned Pyodide v314.0.7; JavaScript and HTML preview are sandboxed in cross-origin/opaque-origin iframes. Other languages are source-generation only unless the user provides a matching runtime. Terminal file operations are limited to the in-memory `/workspace`, and the server never executes user code.
-- Full Vercel production and browser integration not exercised from this isolated environment.

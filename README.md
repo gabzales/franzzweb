@@ -46,6 +46,18 @@ Tombol **Fitur AI** di bar atas membuka menu belajar:
 - Endpoint: `/api/study` (`tool`: `check`, `quiz`, `grade`) dan `/api/chat` dengan `mode` (`tutor`, `explain`, `summary`). Logikanya di `lib/study.js`.
 - Sengaja tidak ada fitur menjawab soal ujian otomatis, mengatur nilai agar melewati KKM, atau menyamarkan penggunaan.
 
+## Editor Kode, Asisten Koding, dan tombol Cari (v0.4.0)
+- **Editor Kode**: robot FRANZZ > **Editor Kode** (atau Fitur AI > Asisten Koding). Tab banyak file, nomor baris, pewarna sintaks (JS/TS, HTML, CSS, JSON, PHP, Python, Java, C/C++, Go, Rust, Dart, SQL, Shell, YAML, Markdown), auto-indent, auto-tutup kurung/kutip, Tab/Shift+Tab, `Ctrl+/` komentar, `Ctrl+F` cari & ganti, `Ctrl+Enter` jalankan, baris tombol simbol untuk ponsel. File disimpan di browser (localStorage) dan bisa **Buka** dari / **Unduh** ke perangkat. Tanpa library luar, jadi cocok dengan CSP bawaan.
+- **Jalankan**: file HTML (CSS/JS dari tab lain dengan nama sama otomatis disisipkan) dan JavaScript berjalan di iframe `sandbox` dengan log `console`. Preview tetap mengikuti CSP sandbox; gambar/CDN dari luar bisa diblokir.
+- **Terminal**: tombol Terminal ditambahkan ke toolbar editor yang sama (bukan dialog Coding Lab baru), dengan panel output berwarna gelap yang mengikuti desain editor awal. Ketik `help` untuk daftar perintah. Termasuk `pwd`, `ls`, `cd`, `cat`, `echo`, `mkdir`, `touch`, `rm`, `cp`, `mv`, `head`, `tail`, `grep`, `wc`, `find`, `nano`, `save`, serta runner `python FILE.py`, `python -c "print(2 + 2)"`, dan `node FILE.js`.
+- **Runtime browser**: Python dijalankan lewat Pyodide `v314.0.7` di Web Worker (runtime diunduh dari jsDelivr saat pertama dipakai; koneksi internet dibutuhkan). JavaScript terminal berjalan di Worker sandbox; preview HTML tetap di iframe sandbox. Keduanya diberi batas waktu eksekusi. Bahasa lain tetap bisa ditulis, dibantu AI, direview, dan diunduh, tetapi perlu runtime yang sesuai untuk dijalankan.
+- **Batas terminal**: ini workspace browser di `/workspace`, bukan Termux/Linux penuh. Tidak ada `pkg`/`apt`, root, filesystem server, modul Node.js native, atau shell server. File workspace terminal bersifat sesi browser; pakai `nano` untuk membukanya di editor (yang disimpan lokal seperti sebelumnya) atau `save` untuk mengunduh.
+- **CSP untuk runner**: `vercel.json` mengizinkan runtime pinned Pyodide dari `cdn.jsdelivr.net`, WebAssembly compilation, dan `blob:` Workers. Ini khusus untuk runner lokal browser; source kode tidak dikirim ke server untuk dieksekusi.
+- **Asisten Koding AI** (tombol **AI** di editor): AI membaca file yang dibuka (atau bagian yang diblok), bisa menulis, menjelaskan, mereview, dan memperbaiki. Tiap blok kode punya tombol Salin / Sisipkan / Ganti / File baru. Memakai `/api/chat` dengan `mode: "code"` dan field `code` (`name`, `lang`, `text`, `sel`); 1 pesan = 1 kuota harian. Tanpa endpoint, database, atau variabel baru.
+- **Latihan Soal** kini bisa langsung dites: ketik topik singkat (< 80 karakter, mis. "Fotosintesis") atau tempel materi, atau tekan **Coba langsung**.
+- **Tombol Cari** (bar atas): link diperlakukan sebagai halaman yang dibuka dan dianalisis (tanpa isi otomatis); kata kunci membuka pencarian Google di tab baru.
+- **Scan & Fill lebih cepat**: form diunduh bersamaan dengan cek akun/kuota; soal esai dipisah dari pilihan/isian singkat (esai 3 per panggilan, lainnya 8, maks 4 paralel); bila model utama gagal sementara, model cadangan langsung dicoba tanpa menunggu jeda retry; status menampilkan lama proses.
+
 ## Chat AI dan situs lain
 - **Chat AI**: tombol "Chat AI" di bar atas. Percakapan multi-giliran (12 pesan terakhir dikirim ke AI), tidak disimpan di server.
   Kalau ada halaman terbuka (mode baca) atau datang dari bookmark Orbit, isinya bisa disertakan sebagai konteks (bisa dimatikan).
@@ -122,8 +134,3 @@ Aplikasi Android memakai backend yang sama dengan web; ia tidak menyimpan `GEMIN
 Di APK, alamat server awal adalah `https://www.franzzorbit.my.id` dan tetap dapat diganti di layar login jika deploy lu memakai domain lain. Fitur baca layar hanya menggunakan Accessibility Service yang diaktifkan pengguna; kolom password dikecualikan, dan teks layar dikirim ke server hanya saat pengguna memilih opsi konteks layar atau menjalankan Scan & Fill / Analisis AI. Periksa jawaban yang disarankan sebelum menerapkannya ke aplikasi asal.
 
 Scan & Fill mendukung jawaban pendek serta kolom esai/paragraf hingga 3.000 karakter.
-
-
-## Coding Lab & Terminal (latest source)
-
-Popup robot includes **Coding Lab & Terminal**. The authenticated `/api/code` endpoint can generate, debug, explain, or improve code in Python, JavaScript, HTML/CSS, Java, Kotlin, PHP, C++, C#, SQL, Bash, Go, Rust, and TypeScript. The server only generates text and never executes submitted source. The browser terminal is a deliberately limited in-memory workspace (`help`, `pwd`, `ls`, `cd`, `cat`, `mkdir`, `touch`, `rm`, `echo`, `date`, `whoami`, `python main.py`, `node main.js`, `run`, `save`); it is not a real Linux/Termux shell and cannot read the server filesystem. Python uses pinned Pyodide `v314.0.7` in a sandboxed iframe; JavaScript runs in a separate sandboxed iframe; HTML/CSS uses an isolated preview iframe. The first Python run needs internet access to jsDelivr. Other languages can be authored and saved but aren't executed by the browser runner. API calls consume the user's regular AI quota.
